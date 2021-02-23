@@ -57,11 +57,14 @@ int LockRelease(Lock *);
 
 typedef struct Cond {
   // Your code goes here
+  Queue waiting;
+  lock_t lock;
+  int inuse;
 } Cond;
 
-int CondInit(Cond *);
-int CondWait(Cond *);
-int CondSignal(Cond *);
+//int CondInit(Cond *);
+//int CondWait(Cond *);
+//int CondSignal(Cond *);
 
 int SynchModuleInit();
 
@@ -72,8 +75,12 @@ lock_t LockCreate();
 int LockHandleAcquire(lock_t lock);
 int LockHandleRelease(lock_t lock);
 cond_t CondCreate(lock_t lock);
+int CondInit (Cond* cond);
 int CondHandleWait(cond_t cond);
+int CondWait (Cond *cond);
 int CondHandleSignal(cond_t cond);
+int CondSignal (Cond *cond);
 int CondHandleBroadcast(cond_t cond);
+int CondBroadcast (Cond *cond);
 
 #endif	//_synch_h_
