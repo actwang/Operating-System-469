@@ -38,12 +38,11 @@ void main (int argc, char *argv[])
 			Exit();
 		}
 
-		if (buffer2->head != buffer2->tail) {    // Buffer is not empty
-			Printf("Consumer %d : removed %c\n", getpid(), buffer2->buffer[buffer2->head]);
-      buffer2->head++;
-			buffer2->head = (buffer2->head + 1) % BUFFERSIZE;   //why mod 5????
-			i++;
-		}
+    if (buffer2->head != buffer2->tail) {
+      Printf("Consumer %d removed :%c\n", getpid(), buffer2->buffer[buffer2->head]);
+      buffer2->tail = (buffer2->tail - 1) % BUFFERSIZE;
+      i++;
+    }
 
 		// Release the lock
 		if (lock_release(buff_lock) != SYNC_SUCCESS) {
