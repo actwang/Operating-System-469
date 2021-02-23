@@ -15,7 +15,7 @@ static Sem sems[MAX_SEMS]; 	// All semaphores in the system
 static Lock locks[MAX_LOCKS];   // All locks in the system
 static Cond conds[MAX_CONDS]; //All condition vars in the system
 
-extern struct PCB *currentPCB; 
+extern struct PCB *currentPCB;
 //----------------------------------------------------------------------
 //	SynchModuleInit
 //
@@ -98,7 +98,7 @@ sem_t SemCreate(int count) {
 int SemWait (Sem *sem) {
   Link	*l;
   int		intrval;
-    
+
   if (!sem) return SYNC_FAIL;
 
   intrval = DisableIntrs ();
@@ -153,7 +153,7 @@ int SemSignal (Sem *sem) {
     if (!AQueueEmpty(&sem->waiting)) { // there is a process to wake up
       l = AQueueFirst(&sem->waiting);
       pcb = (PCB *)AQueueObject(l);
-      if (AQueueRemove(&l) != QUEUE_SUCCESS) { 
+      if (AQueueRemove(&l) != QUEUE_SUCCESS) {
         printf("FATAL ERROR: could not remove link from semaphore queue in SemSignal!\n");
         exitsim();
       }
@@ -175,7 +175,7 @@ int SemHandleSignal(sem_t sem) {
 //-----------------------------------------------------------------------
 //	LockCreate
 //
-//	LockCreate grabs a lock from the systeme-wide pool of locks and 
+//	LockCreate grabs a lock from the systeme-wide pool of locks and
 //	initializes it.
 //	It also sets the inuse flag of the lock to indicate that the lock is
 //	being used by a process. It returns a unique id for the lock. All the
@@ -217,15 +217,15 @@ int LockInit(Lock *l) {
 //---------------------------------------------------------------------------
 //	LockHandleAcquire
 //
-//	This routine acquires a lock given its handle. The handle must be a 
-//	valid handle for this routine to succeed. In that case this routine 
+//	This routine acquires a lock given its handle. The handle must be a
+//	valid handle for this routine to succeed. In that case this routine
 //	returns SYNC_FAIL. Otherwise the routine returns SYNC_SUCCESS.
 //
 //---------------------------------------------------------------------------
 int LockAcquire(Lock *k) {
   Link	*l;
   int		intrval;
-    
+
   if (!k) return SYNC_FAIL;
 
   // Locks are atomic
@@ -293,7 +293,7 @@ int LockRelease(Lock *k) {
   if (!AQueueEmpty(&k->waiting)) { // there is a process to wake up
     l = AQueueFirst(&k->waiting);
     pcb = (PCB *)AQueueObject(l);
-    if (AQueueRemove(&l) != QUEUE_SUCCESS) { 
+    if (AQueueRemove(&l) != QUEUE_SUCCESS) {
       printf("FATAL ERROR: could not remove link from lock queue in LockRelease!\n");
       exitsim();
     }
@@ -319,8 +319,8 @@ int LockHandleRelease(lock_t lock) {
 //	condition variables and associates the specified lock with
 //	it. It should also initialize all the fields that need to initialized.
 //	The lock being associated should be a valid lock, which means that
-//	it should have been obtained via previous call to LockCreate(). 
-//	
+//	it should have been obtained via previous call to LockCreate().
+//
 //	If for some reason a condition variable cannot be created (no more
 //	condition variables left, or the specified lock is not a valid lock),
 //	this function should return INVALID_COND (see synch.h). Otherwise it
@@ -336,24 +336,24 @@ cond_t CondCreate(lock_t lock) {
   for(cond=0; cond<MAX_CONDS; cond++) {
     if(conds[cond].inuse==0) {
       conds[cond].inuse = 1;
+      conds[cond].lock = lock;
       break;
     }
   }
   RestoreIntrs(intrval);
   if(cond==MAX_CONDS) return INVALID_COND;
 
-  if (CondInit(&conds[cond], lock) != SYNC_SUCCESS) return INVALID_COND;
+  if (CondInit(&conds[cond]) != SYNC_SUCCESS) return INVALID_COND;
   return cond;
 }
 
 
-int CondInit (Cond* cond, lock_t lock){
+int CondInit (Cond* cond){
   if (!cond) return SYNC_FAIL;
   if (AQueueInit (&cond->waiting) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not initialize Condition variable waiting queue in CondInit!\n");
     exitsim();
   }
-  cond->lock = lock;
   return SYNC_SUCCESS;
 }
 
@@ -391,7 +391,7 @@ int CondHandleWait(cond_t c) {
 int CondWait (Cond *cond) {
   Link	*l;
   int intrval;
-    
+
   if (!cond) return SYNC_FAIL;
 
   intrval = DisableIntrs ();
@@ -408,7 +408,7 @@ int CondWait (Cond *cond) {
     printf("FATAL ERROR: could not insert new link into Cond. waiting queue in CondWait!\n");
     exitsim();
   }
-  LockHandleRelease(cond->lock);  
+  LockHandleRelease(cond->lock);
   ProcessSleep();
   RestoreIntrs (intrval);
   LockHandleAcquire(cond->lock);
@@ -457,7 +457,7 @@ int CondSignal (Cond *cond) {
   if (!AQueueEmpty(&cond->waiting)) { // there is a process to wake up
     l = AQueueFirst(&cond->waiting);
     pcb = (PCB *)AQueueObject(l);
-    if (AQueueRemove(&l) != QUEUE_SUCCESS) { 
+    if (AQueueRemove(&l) != QUEUE_SUCCESS) {
       printf("FATAL ERROR: could not remove link from Cond. var. queue in CondSignal!\n");
       exitsim();
     }
@@ -470,7 +470,7 @@ int CondSignal (Cond *cond) {
       exitsim();
     }
   }
-  
+
   RestoreIntrs (intrs);
   return SYNC_SUCCESS;
 }
@@ -530,7 +530,7 @@ int CondBroadcast (Cond *cond) {
       exitsim();
     }
   }
-  
+
   RestoreIntrs (intrs);
   return SYNC_SUCCESS;
 }
