@@ -2,7 +2,7 @@
 #define __USERPROG__
 
 
-typedef struct _all_sems{
+typedef struct _sem_struct{
     int numH2O;
     int numSO4;
     int numReact1;
@@ -12,7 +12,7 @@ typedef struct _all_sems{
     int numO2;
     int numSO2;
     int numH2SO4;
-}all_sems;
+}sem_struct;
 
 #define FILE_H2O "injectH2O.dlx.obj"
 #define FILE_SO4 "injectSO4.dlx.obj"
