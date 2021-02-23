@@ -6,11 +6,7 @@
 
 void main (int argc, char *argv[])
 {
-  int numH2O;               // Used to store number of H2O
-  int numSO4;                 //Used to store number of SO4
-  int numReact1 = 0; int numReact2 = 0; int numReact3 = 0;
-  int numH2 = 0; int numO2 = 0; int numSO2 = 0; int numH2SO4 = 0;
-  int num_procs = 0;              // number of total processes
+  all_sems* react_sems;
   uint32 h_mem;                   // Used to hold handle to shared memory page
   sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
   char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
@@ -23,9 +19,9 @@ void main (int argc, char *argv[])
   }
 
   // Convert string from ascii command line argument to integer number
-  numH2O = dstrtol(argv[1], NULL, 10); // the "10" means base 10
-  numSO4 = dstrtol(argv[2], NULL, 10); // the "10" means base 10
-  Printf("Creating %d H2Os and %d SO4s.\n", numH2O, numSO4);
+  react_sems-> numH2O = dstrtol(argv[1], NULL, 10); // the "10" means base 10
+  react_sems-> numSO4 = dstrtol(argv[2], NULL, 10); // the "10" means base 10
+  Printf("Creating %d H2Os and %d SO4s.\n", react_sems-> numH2O , react_sems->numSO4 );
 
   // Allocate space for a shared memory page, which is exactly 64KB
   // Note that it doesn't matter how much memory we actually need: we 
@@ -61,15 +57,15 @@ void main (int argc, char *argv[])
   // Now we can create the processes.  Note that you MUST end your call to
   // process_create with a NULL argument so that the operating system
   // knows how many arguments you are sending.
-  process_create(FILE_H2O, numH2O, s_procs_completed_str, , NULL);
-  process_create(FILE_SO4, numSO4, s_procs_completed_str, , NULL);
+  process_create(FILE_H2O, react_sems->numH2O, s_procs_completed_str, , NULL);
+  process_create(FILE_SO4, react_sems->numSO4, s_procs_completed_str, , NULL);
 
   // wait for semaphore reactants inside react.c
   process_create(FILE_REACT1, numSO4, s_procs_completed_str, , NULL);
   process_create(FILE_REACT2, numSO4, s_procs_completed_str, , NULL);
   process_create(FILE_REACT3, numSO4, s_procs_completed_str, , NULL);
 
-  // And finally, wait until all five processes have finished.
+  // And finally, wait until all five processes have finished. (s_procs_completed back at 1 from -4)
   if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
     Printf("Bad semaphore s_procs_completed (%d) in ", s_procs_completed); Printf(argv[0]); Printf("\n");
     Exit();
