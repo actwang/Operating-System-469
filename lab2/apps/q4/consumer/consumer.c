@@ -42,7 +42,7 @@ void main (int argc, char *argv[])
 		while(lock_acquire(buff_lock) != SYNC_SUCCESS) {
       Printf("Get buffer lock failed.\n");
     }
-		while(buffer2->head == buffer1->tail) {
+		while(buffer2->head == buffer2->tail) {
 			cond_wait(c_empty);
 		}
 		Printf("Consumer %d removed: %c\n", getpid(), buffer2->buffer[buffer2->tail]);
