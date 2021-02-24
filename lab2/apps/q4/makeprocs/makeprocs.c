@@ -8,8 +8,8 @@ void main (int argc, char *argv[])
 {
   int numprocs = 0;               // Used to store number of processes to create
   int i;                          // Loop index variable
-  missile_code *mc;               // Used to get address of shared memory page
-  //uint32 h_mem;                   // Used to hold handle to shared memory page
+  //missile_code *mc;               // Used to get address of shared memory page
+  uint32 h_mem;                   // Used to hold handle to shared memory page
   sem_t s_procs_completed;        // Semaphore used to wait until all spawned processes have completed
   char h_mem_str[10];             // Used as command-line argument to pass mem_handle to new processes
   char s_procs_completed_str[10]; // Used as command-line argument to pass page_mapped handle to new processes
