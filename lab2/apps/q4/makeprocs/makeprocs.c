@@ -17,7 +17,7 @@ void main (int argc, char *argv[])
   lock_t buff_lock;               // Lock for the buffer
   circ_buffer *buffer1;           // Used to get address of shared memory page
   char buff_lock_str[10];         // Used as command-line argument to pass buffer lock to the new processes
-
+ 
   cond_t c_full;
   cond_t c_empty;
   char c_full_str[10];
