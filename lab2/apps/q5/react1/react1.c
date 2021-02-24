@@ -31,6 +31,8 @@ void main (int argc, char *argv[])
   // Signal the semaphore to tell the original process that we're done
   while (i < num_react){
     sem_wait(all_sems->numH2O);
+    sem_signal(all_sems->numH2);
+    sem_signal(all_sems->numO2);
     Printf("2H2O -> 2 H2 + O2 reacted, PID %d\n", getpid());
     i++;
   }
