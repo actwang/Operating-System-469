@@ -11,10 +11,10 @@ void main (int argc, char *argv[])
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
   circ_buffer *buffer2;     // Used to get address of shared memory page
   lock_t buff_lock;			    // Lock for the buffer
-	int i;                // index for str[]
+  int i;                // index for str[]
 
   char str[] = "Hello World";
-	int length = dstrlen(str);
+  int length = dstrlen(str);
 
   cond_t c_empty;
   cond_t c_full;
@@ -39,19 +39,19 @@ void main (int argc, char *argv[])
   }
 
   for(i = 0; i < length; i++) {
-		while(lock_acquire(buff_lock) != SYNC_SUCCESS) {
-      Printf("Get buffer lock failed.\n");
-    }
-		while(buffer2->head == buffer2->tail) {
-			cond_wait(c_empty);
-		}
-		Printf("Consumer %d removed: %c\n", getpid(), buffer2->buffer[buffer2->tail]);
-		buffer2->tail = (buffer2->tail + 1) % BUFFERSIZE;
-		cond_signal(c_full);
-		while(lock_release(buff_lock) != SYNC_SUCCESS) {
-      Printf("Release lock failed.\n");
-    };
+	while(lock_acquire(buff_lock) != SYNC_SUCCESS) {
+      		Printf("Get buffer lock failed.\n");
+    	}
+	while(buffer2->head == buffer2->tail) {
+		cond_wait(c_empty);
 	}
+	Printf("Consumer %d removed: %c\n", getpid(), buffer2->buffer[buffer2->tail]);
+	buffer2->tail = (buffer2->tail + 1) % BUFFERSIZE;
+	cond_signal(c_full);
+	while(lock_release(buff_lock) != SYNC_SUCCESS) {
+		Printf("Release lock failed.\n");
+	}
+   }
 
   // Now print a message to show that everything worked
   // Printf("Producer: This is one of the %d instances you created.  ", buffer2->numprocs);
