@@ -11,10 +11,10 @@ void main (int argc, char *argv[])
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
   circ_buffer *buffer1;     // Used to get address of shared memory page
   lock_t buff_lock;			    // Lock for the buffer
-	int i = 0;                // index for str[]
+  int i = 0;                // index for str[]
 
   char str[] = "Hello World";
-	int length = dstrlen(str);
+  int length = dstrlen(str);
 
   if (argc != 4) { 
     Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_to_page_mapped_semaphore> <handle_to_lock>\n"); 
@@ -33,26 +33,26 @@ void main (int argc, char *argv[])
   }
 
   while(i < length) {
-		if(lock_acquire(buff_lock) != SYNC_SUCCESS) {
-			Printf("Get buffer lock failed.\n");
-			Exit();
-		}
-
-    if (((buffer1->tail + 1) % BUFFERSIZE) != buffer1->head) {
-      Printf("Producer %d inserted: %c\n", getpid(), str[i]);
-      buffer1->buffer[buffer1->tail % BUFFERSIZE] = str[i];
-      buffer1->tail = (buffer1->tail + 1) % BUFFERSIZE;
-      i++;
-    }
-
-
-		// Release the lock
-		if (lock_release(buff_lock) != SYNC_SUCCESS) {
-			Printf("Release lock failed.\n");
-			Exit();
-		}
+	if(lock_acquire(buff_lock) != SYNC_SUCCESS) {
+		Printf("Get buffer lock failed.\n");
+		Exit();
 	}
- 
+
+        if (((buffer1->tail + 1) % BUFFERSIZE) != buffer1->head) {
+	      Printf("Producer %d inserted: %c\n", getpid(), str[i]);
+	      buffer1->buffer[buffer1->tail % BUFFERSIZE] = str[i];
+	      buffer1->tail = (buffer1->tail + 1) % BUFFERSIZE;
+	      i++;
+         }
+
+
+	// Release the lock
+	if (lock_release(buff_lock) != SYNC_SUCCESS) {
+		Printf("Release lock failed.\n");
+		Exit();
+	}
+   }
+
   // Now print a message to show that everything worked
   // Printf("Producer: This is one of the %d instances you created.  ", buffer1->numprocs);
   // Printf("Producer: Missile code is: %c\n", buffer1->really_important_char);
