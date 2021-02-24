@@ -33,8 +33,8 @@ void main (int argc, char *argv[])
     sem_wait(all_sems->numSO2);
     sem_wait(all_sems->numH2);
     sem_wait(all_sems->numO2);
-    
-    Printf("H2 + O2 + SO2 -> H2SO4 reacted, PID %d\n", getpid());
+    sem_signal(all_sems->numH2SO4);
+    Printf("(%d)H2 + O2 + SO2 -> H2SO4 reacted, PID %d\n", i+1, getpid());
     i++;
   }
 
