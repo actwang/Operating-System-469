@@ -10,7 +10,7 @@ void main (int argc, char *argv[])
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
   sem_struct *all_sems; 
   int i = 0;                // index for str[]
-  int num_react;          // number of reaction 2 that is suppsoed to happen
+  int num_react;          // number of reaction 3 that is suppsoed to happen
 
   if (argc != 4) { 
     Printf("Usage: "); Printf(argv[0]); 
@@ -30,10 +30,11 @@ void main (int argc, char *argv[])
 
   // Signal the semaphore to tell the original process that we're done
   while (i < num_react){
-    sem_wait(all_sems->numSO4);
-    sem_signal(all_sems->numSO2);
-    sem_signal(all_sems->numO2);
-    Printf("SO4 -> SO2 + O2 reacted, PID %d\n", getpid());
+    sem_wait(all_sems->numSO2);
+    sem_wait(all_sems->numH2);
+    sem_wait(all_sems->numO2);
+    sem_signal(all_sems->numH2SO4);
+    Printf("H2 + O2 + SO2 -> H2SO4 reacted, PID %d\n", getpid());
     i++;
   }
 
