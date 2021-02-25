@@ -16,10 +16,10 @@ void main (int argc, char *argv[])
   char str[] = "Hello World";
   int length = dstrlen(str);
 
-  if (argc != 4) { 
-    Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_to_page_mapped_semaphore> <handle_to_lock>\n"); 
+  if (argc != 4) {
+    Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_to_page_mapped_semaphore> <handle_to_lock>\n");
     Exit();
-  } 
+  }
 
   // Convert the command-line strings into integers for use as handles
   h_mem = dstrtol(argv[1], NULL, 10); // The "10" means base 10
@@ -33,24 +33,24 @@ void main (int argc, char *argv[])
   }
 
   while(i < length) {
-	if(lock_acquire(buff_lock) != SYNC_SUCCESS) {
-		Printf("Get buffer lock failed.\n");
-		Exit();
-	}
+    if(lock_acquire(buff_lock) != SYNC_SUCCESS) {
+    	Printf("Get buffer lock failed.\n");
+    	Exit();
+    }
 
-	if (buffer2->head != buffer2->tail) {
-		Printf("Consumer %d removed :%c\n", getpid(), buffer2->buffer[buffer2->head]);
-		buffer2->tail = (buffer2->tail - 1) % BUFFERSIZE;
-		i++;
-        }
+    if (buffer2->head != buffer2->tail) {
+    	Printf("Consumer %d removed :%c\n", getpid(), buffer2->buffer[buffer2->head]);
+    	buffer2->tail = (buffer2->tail - 1) % BUFFERSIZE;
+    	i++;
+          }
 
-	// Release the lock
-	if (lock_release(buff_lock) != SYNC_SUCCESS) {
-		Printf("Release lock failed.\n");
-		Exit();
-	}
+    // Release the lock
+    if (lock_release(buff_lock) != SYNC_SUCCESS) {
+    	Printf("Release lock failed.\n");
+    	Exit();
+    }
   }
- 
+
   // Signal the semaphore to tell the original process that we're done
   Printf("Consumer: PID %d is complete.\n", getpid());
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
