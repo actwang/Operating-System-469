@@ -86,7 +86,7 @@ mbox_t MboxCreate() {
 int MboxInit(mbox *mailbox){
   if(!mailbox) return MBOX_FAIL;
   if(AQueueInit (&mailbox->msg_queue) != QUEUE_SUCCESS){
-    print("FATAL ERROR: could not initialize semaphore waiting queue in MboxInit!\n");
+    print("FATAL ERROR: could not initialize buffer waiting queue in MboxInit!\n");
     exitsim();
   }
   return MBOX_SUCCESS;
@@ -109,12 +109,15 @@ int MboxInit(mbox *mailbox){
 int MboxOpen(mbox_t handle) {
   int pid;
   pid = GetCurrentPid();
-  if (LockAquire(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
+
+  if (LockHandleAquire(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
+  
   // Check if current mbox is opened by the current process, if not, set to 1
   if (mbox_arr[handle].procs[pid] == 0) mbox_arr[handle].procs[pid] = 1;
   
   //release lock
-  if (LockRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
+  if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
+
   return MBOX_SUCCESS;
 }
 
@@ -132,14 +135,24 @@ int MboxOpen(mbox_t handle) {
 //
 //-------------------------------------------------------
 int MboxClose(mbox_t handle) {
-  int pid;
+  int pid, i, sum;
   pid = GetCurrentPid();
 
-  if (LockAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
+  if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
+  if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
 
   if (mbox_arr[handle].procs[pid] == 1) mbox_arr[handle].procs[pid] = 0;
 
-  if (LockRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
+  //check if no other process
+  for (i = 0; i < PROCESS_MAX_PROCS; i++){
+    sum += mbox_arr[handle].procs[i];
+  }
+  if (sum == 0){    //no other process indeed
+    mbox_arr[handle].inuse = 0;   //disable mailbox
+    AQueueInit(&(mbox_arr[handle].msg_queue));    // Initialize msg_q back to 0 items
+  }
+
+  if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
 
 
   return MBOX_SUCCESS;
@@ -187,7 +200,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   mbox_msg_arr[i].length = length;
   bcopy(message, mbox_msg_arr[i].buffer, length);
 
-  l = AQueueAllocLink(&mbox_arr[handle].msg_queue);
+  l = AQueueAllocLink(mbox_msg_arr[i].buffer);
   AQueueInsertFirst(&mbox_arr[handle].msg_queue, l);
   // Signal to consumer not empty anymore
   SemHandleSignal(mbox_arr[handle].sem_mboxes);
@@ -217,6 +230,28 @@ int MboxSend(mbox_t handle, int length, void* message) {
 //
 //-------------------------------------------------------
 int MboxRecv(mbox_t handle, int maxlength, void* message) {
+  Link *l;
+  int i; 
+
+  if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
+  if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
+
+  // wait for buffer to not be empty
+  if (mbox_arr[handle].msg_queue.nitems == 0) {
+    SemHandleWait(mbox_arr[handle].sem_mboxes);
+  }
+
+  l = AQueueFirst(&mbox_arr[handle].msg_queue); //extract the first link in the msg_q
+  bcopy(l->object, message, ((mbox_message*)l->object)->length);
+  AQueueRemove(&l);
+
+  // Signal not full anymore, Do we only need to signal when previously it was full?
+  SemHandleSignal(mbox_arr[handle].sem_mboxes);
+
+  //Release lock
+  if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
+    return MBOX_FAIL;
+  }
 
   return MBOX_SUCCESS;
 }
@@ -235,6 +270,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 //--------------------------------------------------------------------------------
 int MboxCloseAllByPid(int pid) {
   int i,j;
+
 
   return MBOX_FAIL;
 }
