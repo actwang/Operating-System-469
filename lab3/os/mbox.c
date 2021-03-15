@@ -92,7 +92,7 @@ mbox_t MboxCreate() {
 int MboxInit(mbox *mailbox){
   if(!mailbox) return MBOX_FAIL;
   if(AQueueInit (&mailbox->msg_queue) != QUEUE_SUCCESS){
-    print("FATAL ERROR: could not initialize semaphore waiting queue in MboxInit!\n");
+    print("FATAL ERROR: could not initialize buffer waiting queue in MboxInit!\n");
     exitsim();
   }
   return MBOX_SUCCESS;
