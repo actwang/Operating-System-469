@@ -111,7 +111,7 @@ int MboxOpen(mbox_t handle) {
   pid = GetCurrentPid();
 
   if (LockHandleAquire(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
-  
+
   // Check if current mbox is opened by the current process, if not, set to 1
   if (mbox_arr[handle].procs[pid] == 0) mbox_arr[handle].procs[pid] = 1;
   
@@ -187,7 +187,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
 
   // Wait for the mbox to be not full
   if (mbox_arr[handle].msg_queue.nitems >= MBOX_MAX_BUFFERS_PER_MBOX){
-    SemHandleWait(mbox_arr[handle].sem_mboxes);
+    CondHandleWait(mbox_arr[handle].full);
   }
 
   // Get first available buffer
@@ -203,7 +203,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   l = AQueueAllocLink(mbox_msg_arr[i].buffer);
   AQueueInsertFirst(&mbox_arr[handle].msg_queue, l);
   // Signal to consumer not empty anymore
-  SemHandleSignal(mbox_arr[handle].sem_mboxes);
+  CondHandleSignal(mbox_arr[handle].empty);
 
   //Release Lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
@@ -238,7 +238,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 
   // wait for buffer to not be empty
   if (mbox_arr[handle].msg_queue.nitems == 0) {
-    SemHandleWait(mbox_arr[handle].sem_mboxes);
+    SemHandleWait(mbox_arr[handle].empty);
   }
 
   l = AQueueFirst(&mbox_arr[handle].msg_queue); //extract the first link in the msg_q
@@ -246,7 +246,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   AQueueRemove(&l);
 
   // Signal not full anymore, Do we only need to signal when previously it was full?
-  SemHandleSignal(mbox_arr[handle].sem_mboxes);
+  SemHandleSignal(mbox_arr[handle].full);
 
   //Release lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
