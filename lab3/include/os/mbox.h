@@ -20,13 +20,15 @@ typedef struct mbox_message {
 } mbox_message;
 
 typedef struct mbox {
-    Queue msg_queue;
-    sem_t sem_mboxes;         // THIS IS INDEX!!!
-    // Number of buffers owned by each mbox is kept track by msg_queue.nitems
+    Queue msg_queue;  // Number of buffers owned by each mbox is kept track by msg_queue.nitems
+
+    // conditional variables for empty&full situation
+    cond_t empty;
+    cond_t full;
 
     int inuse;
     lock_t lock;
-    int procs[PROCESS_MAX_PROCS];   // Bitmap array tracks which pid using mbox
+    int procs[PROCESS_MAX_PROCS];   // Bitmap array tracks which pid is using mbox
     //int m;
 } mbox;
 
