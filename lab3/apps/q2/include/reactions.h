@@ -3,15 +3,12 @@
 
 
 typedef struct _mole_struct{
-    int numCO;
-    int numS2;
-    int numReact1;
-    int numReact2;
-    int numReact3;
-    int numS;
-    int numO2;
-    int numC2;
-    int numSO4;
+    mbox_t S2_mbox;
+    mbox_t S_mbox;
+    mbox_t CO_mbox;
+    mbox_t O2_mbox;
+    mbox_t C2_mbox;
+    mbox_t SO4_mbox;
 }mole_struct;
 
 #define FILE_CO "injectCO.dlx.obj"
