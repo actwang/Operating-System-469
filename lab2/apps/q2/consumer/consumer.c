@@ -39,10 +39,10 @@ void main (int argc, char *argv[])
     }
 
     if (buffer2->head != buffer2->tail) {
-    	Printf("Consumer %d removed :%c\n", getpid(), buffer2->buffer[buffer2->head]);
-    	buffer2->tail = (buffer2->tail - 1) % BUFFERSIZE;
+    	Printf("Consumer %d removed :%c\n", getpid(), buffer2->buffer[buffer2->tail]);
+    	buffer2->tail = (buffer2->tail + 1) % BUFFERSIZE;
     	i++;
-          }
+    }
 
     // Release the lock
     if (lock_release(buff_lock) != SYNC_SUCCESS) {

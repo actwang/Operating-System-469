@@ -3,15 +3,15 @@
 
 
 typedef struct _sem_struct{
-    int numH2O;
-    int numSO4;
-    int numReact1;
-    int numReact2;
-    int numReact3;
-    int numH2;
-    int numO2;
-    int numSO2;
-    int numH2SO4;
+    sem_t numH2O;
+    sem_t numSO4;
+    sem_t numReact1;
+    sem_t numReact2;
+    sem_t numReact3;
+    sem_t numH2;
+    sem_t numO2;
+    sem_t numSO2;
+    sem_t numH2SO4;
 }sem_struct;
 
 #define FILE_H2O "injectH2O.dlx.obj"

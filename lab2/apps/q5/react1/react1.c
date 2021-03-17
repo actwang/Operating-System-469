@@ -21,6 +21,7 @@ void main (int argc, char *argv[])
   h_mem = dstrtol(argv[1], NULL, 10); // The "10" means base 10
   s_procs_completed = dstrtol(argv[2], NULL, 10);
   num_react = dstrtol(argv[3], NULL, 10);
+  //Printf("num_react1 %d\n",num_react);
 
    // Map shared memory page into this process's memory space
   if ((all_sems = (sem_struct*) shmat(h_mem)) == NULL) {
@@ -30,8 +31,8 @@ void main (int argc, char *argv[])
 
   // Signal the semaphore to tell the original process that we're done
   while (i < num_react){
-    sem_wait(all_sems->numH2O);
-    sem_signal(all_sems->numH2);
+    sem_wait(all_sems->numH2O); sem_wait(all_sems->numH2O);
+    sem_signal(all_sems->numH2); sem_signal(all_sems->numH2);
     sem_signal(all_sems->numO2);
     Printf("2H2O -> 2 H2 + O2 reacted, PID %d\n", getpid());
     i++;

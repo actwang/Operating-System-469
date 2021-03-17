@@ -31,7 +31,7 @@ void main (int argc, char *argv[])
   // Signal the semaphore to tell the original process that we're done
   while (i < num_SO4){
     Printf("SO4 injected into Radeon atmosphere, PID %d\n", getpid());
-    all_sems->numSO4 ++; 
+    sem_signal(all_sems->numSO4); 
     i++;
   }
 

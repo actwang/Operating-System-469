@@ -11,9 +11,9 @@
 #define NULL (void *)0
 
 #define SYNC_SUCCESS 1
-#define SYNC_FAIL    -1
+#define SYNC_FAIL -1
 
-#define BUFFERSIZE       5
+#define BUFFERSIZE 5
 
 typedef unsigned int uint32;
 typedef int sem_t;

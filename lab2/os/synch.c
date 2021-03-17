@@ -399,17 +399,19 @@ int CondWait (Cond *cond) {
   dbprintf ('s', "CondWait: Proc %d waiting on cond %d\n", GetCurrentPid(), (int)(cond-conds));
   //dbprintf('s', "CondWait: putting process %d to sleep\n", GetCurrentPid());
   if (GetCurrentPid() != locks[(cond->lock)].pid) return SYNC_FAIL;
-
-  if ((l = AQueueAllocLink((void *)currentPCB)) == NULL) {
+  else{
+      if ((l = AQueueAllocLink((void *)currentPCB)) == NULL) {
     printf("FATAL ERROR: could not allocate link for Cond. queue in CondWait!\n");
     exitsim();
+    }
+    if (AQueueInsertLast (&cond->waiting, l) != QUEUE_SUCCESS) {
+      printf("FATAL ERROR: could not insert new link into Cond. waiting queue in CondWait!\n");
+      exitsim();
+    }
+    LockHandleRelease(cond->lock);
+    ProcessSleep();
   }
-  if (AQueueInsertLast (&cond->waiting, l) != QUEUE_SUCCESS) {
-    printf("FATAL ERROR: could not insert new link into Cond. waiting queue in CondWait!\n");
-    exitsim();
-  }
-  LockHandleRelease(cond->lock);
-  ProcessSleep();
+
   RestoreIntrs (intrval);
   LockHandleAcquire(cond->lock);
   return SYNC_SUCCESS;
@@ -454,20 +456,22 @@ int CondSignal (Cond *cond) {
   intrs = DisableIntrs ();
   dbprintf ('s', "CondSignal: Process %d Signalling on cond  %d.\n", GetCurrentPid(), (int)(cond-conds));
 
-  if (!AQueueEmpty(&cond->waiting)) { // there is a process to wake up
-    l = AQueueFirst(&cond->waiting);
-    pcb = (PCB *)AQueueObject(l);
-    if (AQueueRemove(&l) != QUEUE_SUCCESS) {
-      printf("FATAL ERROR: could not remove link from Cond. var. queue in CondSignal!\n");
-      exitsim();
-    }
-    dbprintf ('s', "CondSignal: Waking up PID %d.\n", (int)(GetPidFromAddress(pcb)));
-    //ProcessWakeup (pcb);
+  if ((locks[cond->lock]).pid == GetCurrentPid()){
+    if (!AQueueEmpty(&cond->waiting)) { // there is a process to wake up
+      l = AQueueFirst(&cond->waiting);
+      pcb = (PCB *)AQueueObject(l);
+      if (AQueueRemove(&l) != QUEUE_SUCCESS) {
+        printf("FATAL ERROR: could not remove link from Cond. var. queue in CondSignal!\n");
+        exitsim();
+      }
+      dbprintf ('s', "CondSignal: Waking up PID %d.\n", (int)(GetPidFromAddress(pcb)));
+      ProcessWakeup (pcb);
 
-    // Move unblocked process from condvar queue into back of lock await queue
-    if (AQueueInsertLast(&(locks[cond->lock].waiting), l) != QUEUE_SUCCESS){
-      printf("FATAL ERROR: could not insert new link into lock queue in CondSignal! \n");
-      exitsim();
+      // Move unblocked process from condvar queue into back of lock await queue
+      // if (AQueueInsertLast(&(locks[cond->lock].waiting), l) != QUEUE_SUCCESS){
+      //   printf("FATAL ERROR: could not insert new link into lock queue in CondSignal!\n");
+      //   exitsim();
+      // }
     }
   }
 

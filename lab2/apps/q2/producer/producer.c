@@ -37,12 +37,13 @@ void main (int argc, char *argv[])
   		Printf("Get buffer lock failed.\n");
   		Exit();
   	}
-    if (buffer1->head != ((buffer1->tail + 1) % BUFFERSIZE)) {
-    Printf("Producer %d inserted: %c\n", getpid(), str[i]);
-    buffer1->buffer[buffer1->head] = str[i];
-		buffer1->head = (buffer1->head + 1) % BUFFERSIZE;
-    i++;
-     }
+
+    if ((buffer1->head + 1) % BUFFERSIZE != buffer1->tail) {
+      Printf("Producer %d inserted: %c\n", getpid(), str[i]);
+      buffer1->buffer[buffer1->head] = str[i];
+      buffer1->head = (buffer1->head + 1) % BUFFERSIZE;
+      i++;
+    }
   	// Release the lock
   	if (lock_release(buff_lock) != SYNC_SUCCESS) {
   		Printf("Release lock failed.\n");

@@ -10,5 +10,5 @@ INCDIR+=-I../include
 
 top: default
 
-run:
-	cd ../; make run
+#run: 
+#    cd ../; make run

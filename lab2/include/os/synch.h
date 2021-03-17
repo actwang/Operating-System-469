@@ -62,10 +62,6 @@ typedef struct Cond {
   int inuse;
 } Cond;
 
-//int CondInit(Cond *);
-//int CondWait(Cond *);
-//int CondSignal(Cond *);
-
 int SynchModuleInit();
 
 sem_t SemCreate(int count);

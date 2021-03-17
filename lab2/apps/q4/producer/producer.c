@@ -20,7 +20,7 @@ void main (int argc, char *argv[])
 	int length = dstrlen(str);
 
   if (argc != 6) {
-    Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_to_page_mapped_semaphore> <handle_to_lock>\n");
+    Printf("Usage: "); Printf(argv[0]); Printf(" <handle_to_shared_memory_page> <handle_to_page_mapped_semaphore> <handle_to_lock> <handle_to_full_condition_var> <handle_to_empty_condition_var>\n");
     Exit();
   }
 
@@ -55,10 +55,6 @@ void main (int argc, char *argv[])
     }
 	}
 
-  // Now print a message to show that everything worked
-  // Printf("Producer: This is one of the %d instances you created.  ", buffer1->numprocs);
-  // Printf("Producer: Missile code is: %c\n", buffer1->really_important_char);
-  // Printf("Producer: My PID is %d\n", getpid());
 
   // Signal the semaphore to tell the original process that we're done
   Printf("Producer: PID %d is complete.\n", getpid());

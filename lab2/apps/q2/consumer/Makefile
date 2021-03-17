@@ -1,4 +1,3 @@
-# Application-specific makefile.  This file only needs to
 # set the APPROOT, SRCS, HDRS, and EXEC variables properly
 # (i.e. the location of the apps directory in relation to this Makefile), and
 # then include the Makerules file from the main apps directory.

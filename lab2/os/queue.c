@@ -287,7 +287,7 @@ int AQueueInsertFirst (Queue *q, Link *l) {
 // Inserts link "l" as the last link in the Queue "q"
 ////////////////////////////////////////////////////////////////////
 int AQueueInsertLast(Queue *q, Link *l) { 
-  if (!l) return QUEUE_FAIL;
+  if (!l)  return QUEUE_FAIL;
   if (!q) return QUEUE_FAIL;
   return AQueueInsertAfter(q, AQueueLast(q), l); 
 }
