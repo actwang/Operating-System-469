@@ -16,7 +16,7 @@ SRCS=filesys.c memory.c misc.c process.c queue.c traps.c sysproc.c mbox.c clock.
 ASMSRCS=osend.s trap_random.s dlxos.s
 
 # List of os header files
-HDRS=dlx.h dlxos.h filesys.h memory.h process.h queue.h synch.h syscall.h traps.h ostraps.h
+HDRS=dlx.h dlxos.h filesys.h memory.h process.h queue.h synch.h traps.h ostraps.h # syscall.h
 OSHDRS=$(HDRS:%.h=os/%.h)
 
 # List of assembly libraries to expose to user programs
