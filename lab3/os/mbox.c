@@ -116,15 +116,15 @@ int MboxOpen(mbox_t handle) {
   int pid;
   pid = GetCurrentPid();
 
-  if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS)  {
-    printf("Lock handle failed aquire\n");
-    return MBOX_FAIL;
-  }
+  // if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS)  {
+  //   printf("Lock handle failed aquire\n");
+  //   return MBOX_FAIL;
+  // }
   // Check if current mbox is opened by the current process, if not, set to 1
   if (mbox_arr[handle].procs[pid] == 0) mbox_arr[handle].procs[pid] = 1;
   
   //release lock
-  if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
+  //if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
 
   return MBOX_SUCCESS;
 }
@@ -146,7 +146,7 @@ int MboxClose(mbox_t handle) {
   int pid, i, sum;
   pid = GetCurrentPid();
 
-  if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
+  //if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
   if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
 
   if (mbox_arr[handle].procs[pid] == 1) mbox_arr[handle].procs[pid] = 0;
@@ -160,7 +160,7 @@ int MboxClose(mbox_t handle) {
     AQueueInit(&(mbox_arr[handle].msg_queue));    // Initialize msg_q back to 0 items
   }
 
-  if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
+  //if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
 
 
   return MBOX_SUCCESS;
@@ -184,22 +184,25 @@ int MboxClose(mbox_t handle) {
 //-------------------------------------------------------
 int MboxSend(mbox_t handle, int length, void* message) {
   Link *l;
-  int i;
-  if (!message) return MBOX_FAIL;
+  int i, intrval;
+  if (!message) {
+    printf("GOt HERE1\n"); return MBOX_FAIL;
+  }
   if (length > MBOX_MAX_MESSAGE_LENGTH){
-    printf("GOt HERE\n"); return MBOX_FAIL;
+    return MBOX_FAIL;
   }
 
   if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS){
     return MBOX_FAIL;
   }
+  printf("Comes here pid = %d\n", GetCurrentPid());
   if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
   // Wait for the mbox to be not full
   if (mbox_arr[handle].msg_queue.nitems >= MBOX_MAX_BUFFERS_PER_MBOX){
     CondHandleWait(mbox_arr[handle].full);
   }
-
-  // Get first available buffer
+  // Get first available buffer, ATOMIC
+  intrval = DisableIntrs();
   for (i = 0; i < MBOX_NUM_BUFFERS; i++){
     if (mbox_msg_arr[i].inuse == 0){
       mbox_msg_arr[i].inuse = 1;
@@ -208,17 +211,19 @@ int MboxSend(mbox_t handle, int length, void* message) {
   // Set length, copy message to message buffer
   mbox_msg_arr[i].length = length;
   bcopy(message, mbox_msg_arr[i].buffer, length);
+  RestoreIntrs(intrval);
 
-  l = AQueueAllocLink(mbox_msg_arr[i].buffer);
+  l = AQueueAllocLink((void*)&mbox_msg_arr[i]);
   AQueueInsertFirst(&mbox_arr[handle].msg_queue, l);
   // Signal to consumer not empty anymore
-  CondHandleSignal(mbox_arr[handle].empty);
+  CondHandleBroadcast(mbox_arr[handle].empty);
   
   //Release Lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
     printf("GOt@@\n");
     return MBOX_FAIL;
   }
+  printf("GOt HERE, PId = %d\n", GetCurrentPid()); 
   return MBOX_SUCCESS;
 }
 
@@ -246,15 +251,15 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 
   // wait for buffer to not be empty
   if (mbox_arr[handle].msg_queue.nitems == 0) {
-    SemHandleWait(mbox_arr[handle].empty);
+    CondHandleWait(mbox_arr[handle].empty);
   }
 
   l = AQueueFirst(&mbox_arr[handle].msg_queue); //extract the first link in the msg_q
-  bcopy(l->object, message, ((mbox_message*)l->object)->length);
+  bcopy(((mbox_message*)l->object)->buffer, message, ((mbox_message*)l->object)->length);
   AQueueRemove(&l);
 
   // Signal not full anymore, Do we only need to signal when previously it was full?
-  SemHandleSignal(mbox_arr[handle].full);
+  CondHandleBroadcast(mbox_arr[handle].full);
 
   //Release lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
