@@ -77,20 +77,46 @@ void main (int argc, char *argv[])
   ditoa(SO4_handle, SO4_handle_str);
   ditoa(O2_handle, O2_handle_str);
 
-  for (i = 0; i < num_S2; i++){
-    process_create(FILE_S2, 0,0,S2_handle_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0; i < num_CO; i++){
-    process_create(FILE_CO, 0,0,CO_handle_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0;i < num_react1; i++){
-    process_create(FILE_REACT1, 0,0,S2_handle_str, S_handle_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0;i < num_react2; i++){
-    process_create(FILE_REACT2, 0,0,CO_handle_str, O2_handle_str, C2_handle_str, s_procs_completed_str, NULL);
-  }
-  for (i = 0;i < num_react3; i++){
-    process_create(FILE_REACT3, 0,0,S_handle_str, O2_handle_str, SO4_handle_str, s_procs_completed_str, NULL);
+  // for (i = 0; i < num_S2; i++){
+  //   process_create(FILE_S2, 0,0,S2_handle_str, s_procs_completed_str, NULL);
+  // }
+  // for (i = 0; i < num_CO; i++){
+  //   process_create(FILE_CO, 0,0,CO_handle_str, s_procs_completed_str, NULL);
+  // }
+  // for (i = 0;i < num_react1; i++){
+  //   process_create(FILE_REACT1, 0,0,S2_handle_str, S_handle_str, s_procs_completed_str, NULL);
+  // }
+  // for (i = 0;i < num_react2; i++){
+  //   process_create(FILE_REACT2, 0,0,CO_handle_str, O2_handle_str, C2_handle_str, s_procs_completed_str, NULL);
+  // }
+  // for (i = 0;i < num_react3; i++){
+  //   process_create(FILE_REACT3, 0,0,S_handle_str, O2_handle_str, SO4_handle_str, s_procs_completed_str, NULL);
+  // }
+
+  while (num_S2 + num_CO + num_react1 + num_react2 + num_react3){
+    if (num_S2){
+      process_create(FILE_S2, 0,0,S2_handle_str, s_procs_completed_str, NULL);
+      num_S2--;
+    }
+    if (num_react1){
+      process_create(FILE_REACT1, 0,0,S2_handle_str, S_handle_str, s_procs_completed_str, NULL);
+      num_react1--;
+    }
+    // inject 4 CO max or it can run out before 4
+    for (i = 0; i < 4; i++){
+      if (num_CO){
+        process_create(FILE_CO, 0,0,CO_handle_str, s_procs_completed_str, NULL);
+        num_CO--;
+      }
+    }
+    if (num_react2){
+      process_create(FILE_REACT2, 0,0,CO_handle_str, O2_handle_str, C2_handle_str, s_procs_completed_str, NULL);
+      num_react2--;
+    }
+    if (num_react3){
+      process_create(FILE_REACT3, 0,0,S_handle_str, O2_handle_str, SO4_handle_str, s_procs_completed_str, NULL);
+      num_react3--;
+    }
   }
 
   // And finally, wait until all  processes have finished. 
