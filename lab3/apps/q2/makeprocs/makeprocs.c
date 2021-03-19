@@ -42,7 +42,7 @@ void main (int argc, char *argv[])
   num_react1 = num_S2;
   num_react2 = num_CO / 4;
   num_react3 = num_SO4;
-  //num_procs = num_react1 + num_react2 + num_react3 + num_S2 + num_CO;
+  num_procs = num_react1 + num_react2 + num_react3 + num_S2 + num_CO;
   Printf("Number of processes = %d\n",num_procs);
   num_S2_left = num_S2 - num_react1;
   num_CO_left = num_CO - num_react2*4;
