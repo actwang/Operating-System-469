@@ -21,12 +21,14 @@ void main (int argc, char *argv[])
   O2_handle = dstrtol(argv[2], NULL, 10);
   SO4_handle = dstrtol(argv[3], NULL, 10);
   s_procs_completed = dstrtol(argv[4], NULL, 10);
+  
   // S
   if (mbox_open(S_handle) != MBOX_SUCCESS){
     Printf("Open mbox failed in S react3, PID %d\n", getpid());
     Exit();
   }
   mbox_recv(S_handle,1,(void*)buffer);
+  Printf("S + 2O2 == SO4 reacted, PID %d\n\n", getpid());
   if (mbox_close(S_handle) != MBOX_SUCCESS){
     Printf("Closing mbox in S react3 failed, PID %d \n", getpid());
     Exit();
@@ -53,7 +55,6 @@ void main (int argc, char *argv[])
     Exit();
   }
   
-  Printf("S + 2O2 == SO4 reacted, PID %d\n", getpid());
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
