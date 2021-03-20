@@ -344,7 +344,6 @@ void ProcessSuspend (PCB *suspend) {
 //	the currently running process is unaffected.
 //
 //----------------------------------------------------------------------
-// NEED MODIFICATION
 void ProcessWakeup (PCB *wakeup) {
   dbprintf ('p',"Waking up PID %d.\n", (int)(wakeup - pcbs));
   // Make sure it's not yet a runnable process.
@@ -354,14 +353,12 @@ void ProcessWakeup (PCB *wakeup) {
     printf("FATAL ERROR: could not remove wakeup PCB from waitQueue in ProcessWakeup!\n");
     exitsim();
   }
-  if ((wakeup->l = AQueueAllocLink(wakeup)) == NULL) {
-    printf("FATAL ERROR: could not get link for wakeup PCB in ProcessWakeup!\n");
-    exitsim();
-  }
-  if (AQueueInsertLast(&runQueue, wakeup->l) != QUEUE_SUCCESS) {
-    printf("FATAL ERROR: could not insert link into runQueue in ProcessWakeup!\n");
-    exitsim();
-  }
+
+  wakeup->autoWake = 0;
+  ProcessDecayEstcpuSleep(wakeup, ClkGetCurJiffies() - wakeup->sleepTime);
+  ProcessRecalcPriority(wakeup);
+
+  ProcessInsertRunning(wakeup);
 }
 
 
@@ -424,8 +421,7 @@ static void ProcessExit () {
 //	for user processes.
 //
 //----------------------------------------------------------------------
-// NEED MODIFICATION
-int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, int isUser) {
+int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo, char *name, int isUser) {
   int		fd, n;
   int		start, codeS, codeL, dataS, dataL;
   uint32	*stackframe;
@@ -609,6 +605,28 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   }
 
   // PCB INITIALIZATION
+  pcb->pnice = pnice;
+  pcb->pinfo = pinfo;
+
+  pcb->runTime = 0;
+  pcb->switchTime = 0;
+  pcb->priority = 0;
+  pcb->basePriority = 0;
+  pcb->estcpu = 0;
+  pcb->num_quanta = 0;
+  pcb->sleepTime = 0;
+  pcb->wakeTime = 0;
+
+  pcb->autoWake = 0;
+  pcb->yield = 0;
+
+  // check if the func os Idle
+  if (func == ProcessIdle){
+    pcb->basePriority = MAX_PRIORITY
+    idlePCB = pcb;
+  }
+
+  ProcessRecalcPriority(pcb);
 
   // Place PCB onto run queue
   intrs = DisableIntrs ();
@@ -616,8 +634,8 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
     printf("FATAL ERROR: could not get link for forked PCB in ProcessFork!\n");
     exitsim();
   }
-  if (AQueueInsertLast(&runQueue, pcb->l) != QUEUE_SUCCESS) {
-    printf("FATAL ERROR: could not insert link into runQueue in ProcessFork!\n");
+  if (ProcessInsertRunning(pcb) != QUEUE_SUCCESS){
+    printf("FATAL ERROR: could not insert pcb to runQueue in ProcessFork!\n");
     exitsim();
   }
   RestoreIntrs (intrs);
@@ -947,6 +965,9 @@ void main (int argc, char *argv[])
     dbprintf('i', "No user program passed!\n");
   }
 
+  // Add Idle Process
+  ProcessFork(ProcessIdle, 0, 0, 0, "Idle", 0);
+
   // Start the clock which will in turn trigger periodic ProcessSchedule's
   ClkStart();
 
@@ -1034,3 +1055,8 @@ void ProcessUserSleep(int seconds) {
 void ProcessYield() {
   // Your code here
 }
+
+void ProcessIdle() {
+  while(1);
+}
+
