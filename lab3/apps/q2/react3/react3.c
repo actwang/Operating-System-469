@@ -9,7 +9,7 @@ void main (int argc, char *argv[])
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
   mbox_t S_handle, O2_handle, SO4_handle;
   char buffer[10];
-  int i = 0;                // index for str[]
+  //int i = 0;                // index for str[]
 
   if (argc != 5) { 
     Printf("Usage: "); Printf(argv[0]); 
@@ -27,15 +27,16 @@ void main (int argc, char *argv[])
     Printf("Open mbox failed in S react3, PID %d\n", getpid());
     Exit();
   }
+  
   mbox_recv(S_handle,1,(void*)buffer);
-  Printf("S + 2O2 == SO4 reacted, PID %d\n\n", getpid());
+
   if (mbox_close(S_handle) != MBOX_SUCCESS){
-    Printf("Closing mbox in S react3 failed, PID %d \n", getpid());
+    Printf("Closing mbox S react3 failed, PID %d \n", getpid());
     Exit();
   }
   // 2O2
   if (mbox_open(O2_handle) != MBOX_SUCCESS){
-    Printf("Open mbox failed in O react3, PID %d\n", getpid());
+    Printf("Open mbox failed in O2 react3, PID %d\n", getpid());
     Exit();
   }
   mbox_recv(O2_handle,2,(void*)buffer);
@@ -49,12 +50,13 @@ void main (int argc, char *argv[])
     Printf("Open mbox failed in SO4 react3, PID %d\n", getpid());
     Exit();
   }
-  mbox_recv(SO4_handle,3,(void*)"SO4");
+  mbox_send(SO4_handle,3,(void*)"SO4");
   if (mbox_close(SO4_handle) != MBOX_SUCCESS){
     Printf("Closing mbox in S react3 failed, PID %d \n", getpid());
     Exit();
   }
   
+  Printf("S + 2O2 == SO4 reacted, PID %d\n\n", getpid());
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
