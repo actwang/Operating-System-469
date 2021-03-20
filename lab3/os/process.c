@@ -1045,6 +1045,10 @@ int GetPidFromAddress(PCB *pcb) {
 //--------------------------------------------------------
 void ProcessUserSleep(int seconds) {
   // Your code here
+  currentPCB->sleepTime = ClkGetCurJiffies();
+  currentPCB->wakeTime = currentPCB->sleepTime + seconds;
+  ProcessSuspend(currentPCB);
+  ProcessSchedule();
 }
 
 //-----------------------------------------------------
@@ -1054,9 +1058,120 @@ void ProcessUserSleep(int seconds) {
 //-----------------------------------------------------
 void ProcessYield() {
   // Your code here
+  currentPCB->yield = 1;
+  ProcessSchedule();
 }
 
-void ProcessIdle() {
-  while(1);
+//-----------------------------------------------------
+// Recalulates priority 
+//-----------------------------------------------------
+void ProcessRecalcPriority(PCB *pcb){
+  if(pcb->flags & PROCESS_TYPE_USER){
+    pcb->priority = USER_BASE_PRIO + pcb->basePriority + pcb->estcpu/4.0 + 2*pcb->pnice;
+  }
+  else if(pcb->flags & PROCESS_TYPE_SYSTEM){
+    pcb->priority = KERNEL_BASE_PRIO + pcb->basePriority + pcb->estcpu/4.0 + 2*pcb->pnice;
+  }
+  else
+  {
+    pcb->priority = MAX_PRIORITY;
+  }
+}
+//-----------------------------------------------------
+// ProcessInsertRunning allocates a link to pcb if NULL
+// Else it takes it out of the current residing queue
+// and put it to the back of the RunQueue
+//-----------------------------------------------------
+int ProcessInsertRunning(PCB *pcb){
+  if (!pcb->l){
+    pcb->l = AQueueAllocLink((void *)pcb);
+  }
+
+  else{
+    //if it's the first
+    if (AQueueFirst(pcb->l->queue) == pcb->l)  pcb->l->queue->first = pcb->l->next;
+    if (AqueueLast(pcb->l->queue)==pcb->l) pcb->l->queue->last = pcb->l->prev;
+    // Else, take it out of the queue and reconnect left and right
+    if (pcb->l->prev != NULL) pcb->l->prev->next = pcb->l->next;
+    if (pcb->l->next != NULL) pcb->l->next->prev = pcb->l->prev;
+    pcb->l->queue->nitems--;
+    pcb->l->prev = NULL;
+    pcb->l->next = NULL;
+    pcb->l->queue = NULL;
+  }
+  if (AQueueInsertLast(&runQueue[WhichQueue(pcb)], pcb->l) != QUEUE_SUCCESS){
+    printf("Failed to insert link in ProcessInsertRunning, PCB = %d\n", GetPidFromAddress(pcb));
+    exitsim();
+  }
+
+  return PROCESS_SUCCESS;
 }
 
+
+//-----------------------------------------------------
+// Recalculate priority based on estcpu
+//-----------------------------------------------------
+void ProcessDecayEstcpu(PCB *pcb){
+  pcb->estcpu = ((double)pcb->estcpu * (double)(2.0/3.0)) +  (double) pcb->pnice;
+  ProcessRecalcPriority(pcb);
+}
+
+//-----------------------------------------------------
+// Make up the decay that the process missed out from
+// going to sleep before entire window CPU
+//-----------------------------------------------------
+void ProcessDecayEstcpuSleep(PCB *pcb, int time_asleep_jiffies){
+  int num_windows_passed;
+  int load, i;
+  double tmp;
+  tmp = 2.0 / 3.0;
+
+  if(time_asleep_jiffies >= PROCESS_QUANTUM_JIFFIES * 10){
+    num_windows_passed = time_asleep_jiffies / (PROCESS_QUANTUM_JIFFIES * 10);
+    for(i = 0; i < num_windows_passed; i++){
+      load *= tmp;
+    }  
+    pcb->estcpu *= load;
+    ProcessRecalcPriority(pcb);
+  }
+}
+//-----------------------------------------------------
+// Find the highest priority PCB in runQueue
+//-----------------------------------------------------
+PCB *ProcessFindHighestPriorityPCB(){
+  PCB * pcb = NULL;
+  int i;
+
+  // Loop through the queues
+  for(i = 0; i < NUM_PRIORITY_QUEUE; i++){
+    if(AQueueLength(&runQueue[i])){
+      pcb = (PCB *) AQueueObject(AQueueFirst(&runQueue[i]));
+      return pcb;
+    }
+  }
+  return pcb;
+}
+
+//-----------------------------------------------------
+// Recalculate all the PCB's estcpu
+//-----------------------------------------------------
+void ProcessDecayAllEstcpus(){
+  int i = 0;
+  Link* l;
+  PCB* current_PCB;
+  for(i = 0; i < NUM_PRIORITY_QUEUE; i++) {
+    l = AQueueFirst(&runQueue[i]);
+    while(l != NULL) {
+      current_PCB = AQueueObject(l);
+      ProcessDecayEstcpu(current_PCB);
+      l = AQueueNext(l);
+    }
+  }
+}
+
+
+void ProcessFixRunQueues(){
+  
+}
+int ProcessCountAutowake();
+void ProcessPrintRunQueues();
