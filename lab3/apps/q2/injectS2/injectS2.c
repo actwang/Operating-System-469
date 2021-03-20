@@ -21,6 +21,7 @@ void main (int argc, char *argv[])
   s_procs_completed = dstrtol(argv[2], NULL, 10);
 
 
+  Printf("S2 injected into Radeon atmosphere, PID %d\n", getpid());
   if (mbox_open(S2_handle) != MBOX_SUCCESS){
     Printf("Open mbox failed in injecting S2, PID %d\n", getpid());
     Exit();
@@ -29,12 +30,12 @@ void main (int argc, char *argv[])
     Printf("Sending to mbox S2 injection failed, PID %d \n", getpid());
     Exit();
   }
+  
   if (mbox_close(S2_handle) != MBOX_SUCCESS){
     Printf("Closing mbox in injecting S2 failed, PID %d \n", getpid());
     Exit();
   }
   
-  Printf("S2 injected into Radeon atmosphere, PID %d\n", getpid());
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
