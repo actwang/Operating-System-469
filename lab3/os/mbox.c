@@ -263,7 +263,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 
   //printf("recv nitems = %d handle = %d, pid = %d\n", mbox_arr[handle].msg_queue.nitems,handle,GetCurrentPid());
   if (mbox_arr[handle].msg_queue.nitems == 0) {
-    //printf("waiting here = %d\n\n", GetCurrentPid());
+    printf("waiting here = %d\n\n", GetCurrentPid());
     CondHandleWait(mbox_arr[handle].empty);
   }
 
