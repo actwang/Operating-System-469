@@ -204,11 +204,6 @@ void ProcessSetResult (PCB * pcb, uint32 result) {
 //	which was saved.
 //
 //----------------------------------------------------------------------
-// helper function
-inline int WhichQueue(PCB *pcb){
-  return pcb->priority / PRIORITY_PER_QUEUE;
-}
-
 void ProcessSchedule () {
   PCB *pcb=NULL;
   int i=0;
@@ -622,7 +617,7 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo, char *name, 
 
   // check if the func os Idle
   if (func == ProcessIdle){
-    pcb->basePriority = MAX_PRIORITY
+    pcb->basePriority = MAX_PRIORITY;
     idlePCB = pcb;
   }
 
@@ -1063,6 +1058,13 @@ void ProcessYield() {
 }
 
 //-----------------------------------------------------
+// Returns the Queue number this pcb is residing in
+//-----------------------------------------------------
+inline int WhichQueue(PCB *pcb){
+  return pcb->priority / PRIORITY_PER_QUEUE;
+}
+
+//-----------------------------------------------------
 // Recalulates priority 
 //-----------------------------------------------------
 void ProcessRecalcPriority(PCB *pcb){
@@ -1170,11 +1172,23 @@ void ProcessDecayAllEstcpus(){
 }
 
 //-----------------------------------------------------
-// Conut the number of auto wake processes in the 
-// Wait queue. 
+// Fix the run QUeue
 //-----------------------------------------------------
 void ProcessFixRunQueues(){
+  PCB* pcb; Link* l;
+  int i;
+  for (i = 0;i < NUM_PRIORITY_QUEUE; i++){
+    l = AQueueFirst(&runQueue[i]);
 
+    while(l){   // while there's a next in this runqueue
+      pcb = (PCB*)AqueueObject(l);
+      if (WhichQueue(pcb) != i){    
+        ProcessInsertRunning(pcb);
+      }       // put it into the right queue
+      
+      l = AQueueNext(l);
+    }
+  }
 }
 
 //-----------------------------------------------------
@@ -1195,15 +1209,15 @@ int ProcessCountAutowake(){
 }
 
 //-----------------------------------------------------
-// Print the number of processes 
+// Print the number of processes in runqueue in PID[priority]
+// format
 //-----------------------------------------------------
 void ProcessPrintRunQueues(){
   int i;
-  Link* link;
+  Link* l;
   PCB *pcb;
 
   printf("Printing Run Queues.....\n\n");
-
 
   for(i = 0; i < NUM_PRIORITY_QUEUE; i ++){
     printf("The running queue is: %d\n", i);
@@ -1211,14 +1225,16 @@ void ProcessPrintRunQueues(){
       printf("Empty Queue. \n");
     }
     else{
-      link = AQueueFirst(&runQueue[i]);
-      while (link != NULL) {
-        pcb = (PCB*) AQueueObject(link);
-        link = AQueueNext(link);
+      l = AQueueFirst(&runQueue[i]);
+      while (l != NULL) {
+        pcb = (PCB*) AQueueObject(l);
+        printf("%d[%d]\n",GetPidFromAddress(pcb), pcb->priority);
+        l = AQueueNext(l);
       }
     }
   }
 }
+
 
 
 void ProcessIdle() {
