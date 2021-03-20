@@ -21,6 +21,8 @@ void main (int argc, char *argv[])
   CO_handle = dstrtol(argv[1], NULL, 10); // The "10" means base 10
   s_procs_completed = dstrtol(argv[2], NULL, 10);
 
+
+  
   if (mbox_open(CO_handle) != MBOX_SUCCESS){
     Printf("Open mbox failed in injecting CO, PID %d\n", getpid());
     Exit();
@@ -33,7 +35,6 @@ void main (int argc, char *argv[])
     Printf("Closing mbox in injecting CO failed, PID %d \n", getpid());
     Exit();
   }
-
   Printf("CO injected into Radeon atmosphere, PID %d\n", getpid());
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
