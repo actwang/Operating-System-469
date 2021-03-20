@@ -18,7 +18,7 @@ void main (int argc, char *argv[])
   }
 
   S2_handle = dstrtol(argv[1], NULL, 10); // The "10" means base 10
-  S_handle = dstrtol(argv[3], NULL, 10);
+  S_handle = dstrtol(argv[2], NULL, 10);
   s_procs_completed = dstrtol(argv[3], NULL, 10);
 
   if (mbox_open(S2_handle) != MBOX_SUCCESS){
@@ -44,8 +44,8 @@ void main (int argc, char *argv[])
     Printf("Closing mbox in react1 failed, PID %d \n", getpid());
     Exit();
   }
-  
   Printf("S2 -> S + S reacted, PID %d\n", getpid());
+  
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
