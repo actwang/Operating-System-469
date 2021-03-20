@@ -1162,16 +1162,65 @@ void ProcessDecayAllEstcpus(){
   for(i = 0; i < NUM_PRIORITY_QUEUE; i++) {
     l = AQueueFirst(&runQueue[i]);
     while(l != NULL) {
-      current_PCB = AQueueObject(l);
+      current_PCB = (PCB*)AQueueObject(l);
       ProcessDecayEstcpu(current_PCB);
       l = AQueueNext(l);
     }
   }
 }
 
-
+//-----------------------------------------------------
+// Conut the number of auto wake processes in the 
+// Wait queue. 
+//-----------------------------------------------------
 void ProcessFixRunQueues(){
-  
+
 }
-int ProcessCountAutowake();
-void ProcessPrintRunQueues();
+
+//-----------------------------------------------------
+// Conut the number of auto wake processes in the 
+// Wait queue. 
+//-----------------------------------------------------
+int ProcessCountAutowake(){
+  PCB* pcb;
+  Link* link = AQueueFirst(&waitQueue);
+  int num_autowakes = 0;
+
+  //Find the number of autowake processes
+  while(link != NULL){
+    pcb = (PCB *) AQueueObject(link);
+    num_autowakes += pcb->autoWake;
+  }
+  return num_autowakes;
+}
+
+//-----------------------------------------------------
+// Print the number of processes 
+//-----------------------------------------------------
+void ProcessPrintRunQueues(){
+  int i;
+  Link* link;
+  PCB *pcb;
+
+  printf("Printing Run Queues.....\n\n");
+
+
+  for(i = 0; i < NUM_PRIORITY_QUEUE; i ++){
+    printf("The running queue is: %d\n", i);
+    if(AQueueEmpty(&runQueue[i])){
+      printf("Empty Queue. \n");
+    }
+    else{
+      link = AQueueFirst(&runQueue[i]);
+      while (link != NULL) {
+        pcb = (PCB*) AQueueObject(link);
+        link = AQueueNext(link);
+      }
+    }
+  }
+}
+
+
+void ProcessIdle() {
+  while(1);
+}
