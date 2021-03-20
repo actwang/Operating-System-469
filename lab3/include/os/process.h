@@ -30,6 +30,14 @@
 #define	PROCESS_TYPE_SYSTEM	0x100
 #define	PROCESS_TYPE_USER	0x200
 
+// new defined constants for Lab3
+#define BASE_PRIORITY 50
+#define MAX_PRIORITY 127
+#define PRIORITY_PER_QUEUE 4
+#define NUM_PRIORITY_QUEUE 32
+
+#define JIFFIES_DECAY_TIME 100
+
 typedef	void (*VoidFunc)();
 
 // Process control block
@@ -45,7 +53,24 @@ typedef struct PCB {
 
   int           pinfo;          // Turns on printing of runtime stats
   int           pnice;          // Used in priority calculation
+
+  // new elements added for Lab3 Q3
+  int runTime; // total time in jiffies(cpu)
+  int switchTime; // time to switch from pcb to CPU
+
+  int priority; // priority of the process
+  int basePriority;
+  int num_quanta;
+  double estcpu; // estimated time needed in CPU
+
+  int sleepTime; // time the pcb in sleep
+  int wakeTime; // time to wake up
+
+  // flags
+  int yield;
+  int autoWake;
 } PCB;
+
 
 // Offsets of various registers from the stack pointer in the register
 // save frame.  Offsets are in WORDS (4 byte chunks)
@@ -90,5 +115,20 @@ int GetPidFromAddress(PCB *pcb);
 
 void ProcessUserSleep(int seconds);
 void ProcessYield();
+
+// new added functions
+void ProcessRecalcPriority(PCB *pcb);
+inline int WhichQueue(PCB *pcb);
+int ProcessInsertRunning(PCB *pcb);
+void ProcessDecayEstcpu(PCB *pcb);
+void ProcessDecayEstcpuSleep(PCB *pcb, int time_asleep_jiffies);
+PCB *ProcessFindHighestPriorityPCB();
+void ProcessDecayAllEstcpus();
+void ProcessFixRunQueues();
+int ProcessCountAutowake();
+void ProcessPrintRunQueues();
+
+void ProcessAutoWakeup();
+
 
 #endif	/* __process_h__ */
