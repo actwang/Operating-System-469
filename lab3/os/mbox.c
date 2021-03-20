@@ -153,7 +153,7 @@ int MboxClose(mbox_t handle) {
     //printf("Failing = %d, handle = %d\n", GetCurrentPid(), handle); 
     return MBOX_FAIL;
   }
-  if (pid == 23) printf("PID 23 handle %d\n",handle);
+  //if (pid == 23) printf("PID 23 handle %d\n",handle);
   if (mbox_arr[handle].procs[pid] == 1) mbox_arr[handle].procs[pid] = 0;
 
   //check if no other process
@@ -162,7 +162,7 @@ int MboxClose(mbox_t handle) {
   }
   if (sum == 0){    //no other process indeed
     mbox_arr[handle].inuse = 0;   //disable mailbox
-    AQueueInit(&(mbox_arr[handle].msg_queue));    // Initialize msg_q back to 0 items
+    //AQueueInit(&(mbox_arr[handle].msg_queue));    // Initialize msg_q back to 0 items
   }
 
   //if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS)  return MBOX_FAIL;
@@ -226,8 +226,8 @@ int MboxSend(mbox_t handle, int length, void* message) {
     printf("handle = %d\n",handle);
   }*/
   // Signal to consumer not empty anymore
-  CondHandleBroadcast(mbox_arr[handle].empty);
-  
+  CondHandleSignal(mbox_arr[handle].empty);
+  if (GetCurrentPid()==29) printf("S nitems %d, handle = %d\n", mbox_arr[handle].msg_queue.nitems,handle);
   //Release Lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
     //printf("GOt@@\n");
@@ -260,10 +260,11 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
 
   // wait for buffer to not be empty
-
-  //printf("recv nitems = %d handle = %d, pid = %d\n", mbox_arr[handle].msg_queue.nitems,handle,GetCurrentPid());
+  if (GetCurrentPid() == 23){
+    printf("recv nitems = %d handle = %d, pid = %d\n", mbox_arr[handle].msg_queue.nitems,handle,GetCurrentPid());
+  }
   if (mbox_arr[handle].msg_queue.nitems == 0) {
-    printf("waiting here = %d\n\n", GetCurrentPid());
+    //printf("waiting here = %d\n\n", GetCurrentPid());
     CondHandleWait(mbox_arr[handle].empty);
   }
 
@@ -272,7 +273,7 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   AQueueRemove(&l);
 
   // Signal not full anymore, Do we only need to signal when previously it was full?
-  CondHandleBroadcast(mbox_arr[handle].full);
+  CondHandleSignal(mbox_arr[handle].full);
   //Release lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
     return MBOX_FAIL;
