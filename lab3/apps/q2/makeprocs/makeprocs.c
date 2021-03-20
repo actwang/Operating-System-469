@@ -49,9 +49,9 @@ void main (int argc, char *argv[])
   // GOLDEN RULE: if there's a num_xxx_left var, that is the final amount and num_xxx is medium product. Else it's
     //            num_xxx itself that's final
   
-  Printf("num_react1,2,3 = %d %d %d\n\n", num_react1,num_react2,num_react3);
+  Printf("num_react1,2,3 = %d %d %d\n", num_react1,num_react2,num_react3);
 
-  Printf("num_S2left,Co left, S, O2 left= %d %d %d %d,\n\n",num_S2_left,num_CO_left,num_S_left,num_O2_left);
+  Printf("num_S2left,Co left, S, O2 left= %d %d %d %d,\n",num_S2_left,num_CO_left,num_S_left,num_O2_left);
   Printf("num_S,O2,C2, SO4= %d %d %d %d\n\n",num_S,num_O2,num_C2,num_SO4);
 
   // creat mailbox handle for use
