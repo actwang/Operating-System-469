@@ -121,6 +121,7 @@ int MboxOpen(mbox_t handle) {
   //   return MBOX_FAIL;
   // }
   // Check if current mbox is opened by the current process, if not, set to 1
+  if (mbox_arr[handle].inuse == 0) mbox_arr[handle].inuse = 1;
   if (mbox_arr[handle].procs[pid] == 0) mbox_arr[handle].procs[pid] = 1;
   
   //release lock
@@ -145,10 +146,14 @@ int MboxOpen(mbox_t handle) {
 int MboxClose(mbox_t handle) {
   int pid, i, sum;
   pid = GetCurrentPid();
+  //printf("test%d\n",pid);
 
   //if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS) return MBOX_FAIL;
-  if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
-
+  if (mbox_arr[handle].inuse == 0) {
+    //printf("Failing = %d, handle = %d\n", GetCurrentPid(), handle); 
+    return MBOX_FAIL;
+  }
+  if (pid == 23) printf("PID 23 handle %d\n",handle);
   if (mbox_arr[handle].procs[pid] == 1) mbox_arr[handle].procs[pid] = 0;
 
   //check if no other process
@@ -185,8 +190,7 @@ int MboxClose(mbox_t handle) {
 int MboxSend(mbox_t handle, int length, void* message) {
   Link *l;
   int i, intrval;
-  if (!message) {
-    printf("GOt HERE1\n"); return MBOX_FAIL;
+  if (!message) {return MBOX_FAIL;
   }
   if (length > MBOX_MAX_MESSAGE_LENGTH){
     return MBOX_FAIL;
@@ -195,7 +199,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
   if (LockHandleAcquire(mbox_arr[handle].lock) != SYNC_SUCCESS){
     return MBOX_FAIL;
   }
-  printf("Comes here pid = %d\n", GetCurrentPid());
+  //printf("Comes here pid = %d\n", GetCurrentPid());
   if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
   // Wait for the mbox to be not full
   if (mbox_arr[handle].msg_queue.nitems >= MBOX_MAX_BUFFERS_PER_MBOX){
@@ -215,15 +219,21 @@ int MboxSend(mbox_t handle, int length, void* message) {
 
   l = AQueueAllocLink((void*)&mbox_msg_arr[i]);
   AQueueInsertFirst(&mbox_arr[handle].msg_queue, l);
+  /*DEBUG*//*
+  if (length == 1){ //S
+    printf("Inserted S to Queue of buffers belong to S_handle pid = %d\n", GetCurrentPid());
+    printf("msg_queue.nitem = %d\n", mbox_arr[handle].msg_queue.nitems);
+    printf("handle = %d\n",handle);
+  }*/
   // Signal to consumer not empty anymore
   CondHandleBroadcast(mbox_arr[handle].empty);
   
   //Release Lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
-    printf("GOt@@\n");
+    //printf("GOt@@\n");
     return MBOX_FAIL;
   }
-  printf("GOt HERE, PId = %d\n", GetCurrentPid()); 
+  //printf("GOt HERE, PId = %d\n", GetCurrentPid()); 
   return MBOX_SUCCESS;
 }
 
@@ -250,7 +260,10 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   if (mbox_arr[handle].inuse == 0) return MBOX_FAIL;
 
   // wait for buffer to not be empty
+
+  //printf("recv nitems = %d handle = %d, pid = %d\n", mbox_arr[handle].msg_queue.nitems,handle,GetCurrentPid());
   if (mbox_arr[handle].msg_queue.nitems == 0) {
+    //printf("waiting here = %d\n\n", GetCurrentPid());
     CondHandleWait(mbox_arr[handle].empty);
   }
 
@@ -260,7 +273,6 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 
   // Signal not full anymore, Do we only need to signal when previously it was full?
   CondHandleBroadcast(mbox_arr[handle].full);
-
   //Release lock
   if (LockHandleRelease(mbox_arr[handle].lock) != SYNC_SUCCESS){
     return MBOX_FAIL;
@@ -281,11 +293,20 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
 // Returns MBOX_SUCCESS on success.
 //
 int MboxCloseAllByPid(int pid) {
-  int i;
-
-  // too much work? possible error?
-  for(i = 0; i < MBOX_NUM_MBOXES; ++i){
-    MboxClose(i);
+  int i, n, procs_count;
+  for (i = 0; i < MBOX_NUM_MBOXES; i ++){
+    if (mbox_arr[i].procs[pid]){
+      LockHandleAcquire(mbox_arr[i].lock);
+      mbox_arr[i].procs[pid] = 0;
+      //check if it's the only open process
+      for (n = 0; n < PROCESS_MAX_PROCS; n++){
+        procs_count += mbox_arr[i].procs[n];
+      }
+      if (!procs_count){
+        mbox_arr[i].inuse = 0;
+      }
+      LockHandleRelease(mbox_arr[i].lock);
+    }
   }
   
   return MBOX_SUCCESS;
