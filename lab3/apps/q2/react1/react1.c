@@ -1,4 +1,4 @@
-// 1) S2 -> S + S
+
 #include "usertraps.h"
 #include "misc.h"
 
@@ -20,7 +20,9 @@ void main (int argc, char *argv[])
   S2_handle = dstrtol(argv[1], NULL, 10); // The "10" means base 10
   S_handle = dstrtol(argv[2], NULL, 10);
   s_procs_completed = dstrtol(argv[3], NULL, 10);
-
+ 
+  // 1) S2 -> S + S
+  Printf("loop\n");
   if (mbox_open(S2_handle) != MBOX_SUCCESS){
     Printf("Open mbox failed in react1, PID %d\n", getpid());
     Exit();
@@ -45,7 +47,6 @@ void main (int argc, char *argv[])
     Exit();
   }
   Printf("S2 -> S + S reacted, PID %d\n", getpid());
-  
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
