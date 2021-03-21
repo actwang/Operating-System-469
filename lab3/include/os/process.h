@@ -119,6 +119,8 @@ void ProcessUserSleep(int seconds);
 void ProcessYield();
 
 // new added functions
+void ProcessIdle();
+
 void ProcessRecalcPriority(PCB *pcb);
 inline int WhichQueue(PCB *pcb);
 int ProcessInsertRunning(PCB *pcb);
@@ -131,6 +133,7 @@ int ProcessCountAutowake();
 void ProcessPrintRunQueues();
 
 void ProcessAutoWakeup();
+
 
 
 #endif	/* __process_h__ */

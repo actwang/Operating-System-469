@@ -247,13 +247,17 @@ void ProcessSchedule () {
 
   // update estimated cpu time
   // update estimated cup time if procs used entire window
-  if (currentPCB->yield == 0){
-    currentPCB->estcpu++;
-    currentPCB->num_quanta++;
-    ProcessRecalcPriority(currentPCB);
-  }
-  else {
-    currentPCB->yield = 0;
+  if(currentPCB->flags & PROCESS_STATUS_RUNNABLE){
+    if (currentPCB->yield == 0){
+      currentPCB->estcpu++;
+      currentPCB->num_quanta++;
+      ProcessRecalcPriority(currentPCB);
+    }
+    else {
+      currentPCB->yield = 0;
+    }
+
+    ProcessInsertRunning(currentPCB);
   }
 
   if (ClkGetCurJiffies() > decay_time){
@@ -1065,7 +1069,7 @@ inline int WhichQueue(PCB *pcb){
 }
 
 //-----------------------------------------------------
-// Recalulates priority 
+// Recalulates priority
 //-----------------------------------------------------
 void ProcessRecalcPriority(PCB *pcb){
   if(pcb->flags & PROCESS_TYPE_USER){
@@ -1132,7 +1136,7 @@ void ProcessDecayEstcpuSleep(PCB *pcb, int time_asleep_jiffies){
     num_windows_passed = time_asleep_jiffies / (PROCESS_QUANTUM_JIFFIES * 10);
     for(i = 0; i < num_windows_passed; i++){
       load *= tmp;
-    }  
+    }
     pcb->estcpu *= load;
     ProcessRecalcPriority(pcb);
   }
@@ -1182,18 +1186,18 @@ void ProcessFixRunQueues(){
 
     while(l){   // while there's a next in this runqueue
       pcb = (PCB*)AqueueObject(l);
-      if (WhichQueue(pcb) != i){    
+      if (WhichQueue(pcb) != i){
         ProcessInsertRunning(pcb);
       }       // put it into the right queue
-      
+
       l = AQueueNext(l);
     }
   }
 }
 
 //-----------------------------------------------------
-// Conut the number of auto wake processes in the 
-// Wait queue. 
+// Conut the number of auto wake processes in the
+// Wait queue.
 //-----------------------------------------------------
 int ProcessCountAutowake(){
   PCB* pcb;
@@ -1235,8 +1239,6 @@ void ProcessPrintRunQueues(){
   }
 }
 
-
-
-void ProcessIdle() {
+void ProcessIdle(){
   while(1);
 }
