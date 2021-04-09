@@ -12,7 +12,7 @@
 #include "queue.h"
 
 // num_pages = size_of_memory / size_of_one_page
-static uint32 freemap[/*size*/];
+static uint32 freemap[NUM_PAGES];
 static uint32 pagestart;
 static int nfreepages;
 static int freemapmax;
@@ -168,6 +168,25 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
+  unsigned int fault_pagenum, userStack_pagenum;
+  // Page number of the faulting address
+  fault_pagenum = pcb->currentSavedFrame[PROCESS_STACK_FAULT] / MEM_PAGESIZE;
+  // Page number for user stack
+  userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] / MEM_PAGESIZE;
+  
+  if (fault_pagenum > userStack_pagenum){
+    ProcessKill();
+    printf("SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
+    return MEM_FAIL;
+  }
+  // if user stack caused fault and new page allocated
+  else
+  {
+    pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
+    pcb->npages++;
+    return MEM_SUCCESS;
+  }
+  
   return MEM_FAIL;
 }
 
@@ -177,16 +196,39 @@ int MemoryPageFaultHandler(PCB *pcb) {
 // Feel free to edit/remove them
 //---------------------------------------------------------------------
 
+// Find an available bit in freemap, set it, decrement nfreepages and return allocated page number
 int MemoryAllocPage(void) {
-  return -1;
+  int i = 0, page_num;
+  uint32 bit;
+  //no free pages
+  if (nfreepages == 0){
+    printf("No free pages in MemoryAllocPage\n");
+    return -1;
+  }
+
+  //find the available bit
+  while (freemap[i] == 0) i++;
+
+  page_num = freemap[i];
+  // find the bit in the 32 bit integer that 
+  while (!(page_num & (1 << bit))) bit++;
+  
+  page_num = i*32 + bit;
+  MemorySetFreemap(page_num, 0);
+  nfreepages--;
+
+  return page_num;
 }
 
-
+// Return the PTE given page number
 uint32 MemorySetupPte (uint32 page) {
-  return -1;
+  ???????
+  return pte;
 }
 
 
 void MemoryFreePage(uint32 page) {
+
+  nfreepages++;
 }
 
