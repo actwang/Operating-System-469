@@ -26,14 +26,14 @@
 #define MEM_L1TABLE_SIZE (MEM_MAX_VIRTUAL_ADDRESS + 1) >> MEM_L1FIELD_FIRST_BITNUM      // Size of array of level 1 pagetable
 #define MEM_PAGESIZE (0x1 << MEM_L1FIELD_FIRST_BITNUM)          // Size of a page 
 
-#define MEM_OFFSET_MASK (MEM_PAGESIZE - 1)  //page offset mask
+#define MEM_OFFSET_MASK (MEM_PAGESIZE - 1)  //page offset mask 0xFFF
 #define MEM_PTE2PAGE_MASK (~(MEM_PTE_READONLY | MEM_PTE_DIRTY | MEM_PTE_VALID))     // Mask to convert from PTE to page address
 
 #define MEM_MAX_PHYS_MEM (1<<21) //2MB = 2097152 bytes = 0x1FFFF, 2^21
 #define MEM_MAX_PAGES (MEM_MAX_PHYS_MEM / MEM_PAGESIZE)     //number of pages in physcial memory
 
 // num_pages = size_of_memory / size_of_one_page
-#define NUM_PAGES MEM_MAX_PAGES/32
+#define NUM_PAGES MEM_MAX_PAGES/32          // number of pages / 32(bits) so that each bit can represent a page
 
 //--------------------------------------------------------
 

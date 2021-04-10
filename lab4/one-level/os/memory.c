@@ -56,6 +56,26 @@ int MemoryGetSize() {
 //
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
+  nfreepages = 0;
+  int i, bit, pagenum;
+
+  pagestart = (lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;???
+  for (i = 0 ; i < NUM_PAGES; i++){
+    freemap[i] = 0; //reset the whole freemap
+  }
+
+  // Set all non-OS bits to free(1) in the freemap
+  for (i = pagestart ; i < MEM_MAX_PAGES ; i ++){
+    //find the bit position of the bit we want to set
+    bit = i % 32;
+    pagenum = i/32;
+    // Set the bit to 1
+    freemap[pagenum] = freemap[pagenum] | (1 << bit); 
+    nfreepages++;
+  }
+
+
+
 }
 
 
@@ -174,13 +194,13 @@ int MemoryPageFaultHandler(PCB *pcb) {
   // Page number for user stack
   userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] / MEM_PAGESIZE;
   
-  if (fault_pagenum > userStack_pagenum){
+  if (fault_pagenum >= userStack_pagenum){
     ProcessKill();
     printf("SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
     return MEM_FAIL;
   }
   // if user stack caused fault and new page allocated
-  else
+  else   
   {
     pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
     pcb->npages++;
@@ -210,7 +230,7 @@ int MemoryAllocPage(void) {
   while (freemap[i] == 0) i++;
 
   page_num = freemap[i];
-  // find the bit in the 32 bit integer that 
+  // find the bit in the 32 bit integer that is 1(while unavailable, keep looking)
   while (!(page_num & (1 << bit))) bit++;
   
   page_num = i*32 + bit;
@@ -222,7 +242,7 @@ int MemoryAllocPage(void) {
 
 // Return the PTE given page number
 uint32 MemorySetupPte (uint32 page) {
-  ???????
+  uint32 pte = (MEM_PAGESIZE * page) | MEM_PTE_VALID;
   return pte;
 }
 
