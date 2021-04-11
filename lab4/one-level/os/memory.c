@@ -234,7 +234,7 @@ int MemoryAllocPage(void) {
   // find the bit in the 32 bit integer that is 1(while unavailable, keep looking)
   while (!(page_var & (1 << bit))) bit++;
 
-  freemap[i] |= (0 << bit);   // Mark as unavailable
+  freemap[i] &= invert(1 << bit);   // Mark as unavailable
   page_num = i*32 + bit;
 
   nfreepages--;
