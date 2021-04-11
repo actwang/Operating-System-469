@@ -59,7 +59,8 @@ void MemoryModuleInit() {
   nfreepages = 0;
   int i, bit, pagenum;
 
-  pagestart = (lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;???
+  pagestart = (lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;
+
   for (i = 0 ; i < NUM_PAGES; i++){
     freemap[i] = 0; //reset the whole freemap
   }
@@ -74,8 +75,6 @@ void MemoryModuleInit() {
     nfreepages++;
   }
 
-
-
 }
 
 
@@ -88,7 +87,28 @@ void MemoryModuleInit() {
 //
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
+  uint32 phys_addr, page_num, page_offset;
 
+  if (addr > MEM_MAX_VIRTUAL_ADDRESS){
+    printf("Virtual address full, exiting translation\n");
+    return 0;
+  }
+
+  page_num = addr >> MEM_L1FIELD_FIRST_BITNUM;
+  page_offset = addr & 0xFFF;
+
+  phys_addr = pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK | page_offset;
+  
+  // Check if it's valid. If not, we need to trigger a page fault handler
+  if ( (pcb->pagetable[page_num] & MEM_PTE_VALID) == 0){
+    // Save address to currentSavedFrame
+    pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
+    // Call page fault handler
+    MemoryPageFaultHandler(pcb);
+    return 0;
+  }
+
+  return phys_addr;
 }
 
 
@@ -127,7 +147,7 @@ int MemoryMoveBetweenSpaces (PCB *pcb, unsigned char *system, unsigned char *use
     // Calculate the number of bytes to copy this time.  If we have more bytes
     // to copy than there are left in the current page, we'll have to just copy to the
     // end of the page and then go through the loop again with the next page.
-    // In other words, "bytesToCopy" is the minimum of the bytes left on this page
+    // In other words, "bytesToCopy" is the minimum of the bytes left on this page 
     // and the total number of bytes left to copy ("n").
 
     // First, compute number of bytes left in this page.  This is just
@@ -136,7 +156,7 @@ int MemoryMoveBetweenSpaces (PCB *pcb, unsigned char *system, unsigned char *use
     // MEM_ADDRESS_OFFSET_MASK should be the bit mask required to get just the
     // "offset" portion of an address.
     bytesToCopy = MEM_PAGESIZE - ((uint32)curUser & MEM_ADDRESS_OFFSET_MASK);
-
+    
     // Now find minimum of bytes in this page vs. total bytes left to copy
     if (bytesToCopy > n) {
       bytesToCopy = n;
@@ -175,17 +195,17 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 }
 
 //---------------------------------------------------------------------
-// MemoryPageFaultHandler is called in traps.c whenever a page fault
+// MemoryPageFaultHandler is called in traps.c whenever a page fault 
 // (better known as a "seg fault" occurs.  If the address that was
-// being accessed is on the stack, we need to allocate a new page
+// being accessed is on the stack, we need to allocate a new page 
 // for the stack.  If it is not on the stack, then this is a legitimate
 // seg fault and we should kill the process.  Returns MEM_SUCCESS
 // on success, and kills the current process on failure.  Note that
-// fault_address is the beginning of the page of the virtual address that
+// fault_address is the beginning of the page of the virtual address that 
 // caused the page fault, i.e. it is the vaddr with the offset zero-ed
 // out.
 //
-// Note: The existing code is incomplete and only for reference.
+// Note: The existing code is incomplete and only for reference. 
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
@@ -194,20 +214,20 @@ int MemoryPageFaultHandler(PCB *pcb) {
   fault_pagenum = pcb->currentSavedFrame[PROCESS_STACK_FAULT] / MEM_PAGESIZE;
   // Page number for user stack
   userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] / MEM_PAGESIZE;
-
+  
   if (fault_pagenum >= userStack_pagenum){
     ProcessKill();
     printf("SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
     return MEM_FAIL;
   }
   // if user stack caused fault and new page allocated
-  else
+  else   
   {
     pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
     pcb->npages++;
     return MEM_SUCCESS;
   }
-
+  
   return MEM_FAIL;
 }
 
@@ -216,7 +236,6 @@ int MemoryPageFaultHandler(PCB *pcb) {
 // You may need to implement the following functions and access them from process.c
 // Feel free to edit/remove them
 //---------------------------------------------------------------------
-
 // Find an available bit in freemap, set it, decrement nfreepages and return allocated page number
 int MemoryAllocPage(void) {
   int i = 0, page_num, page_var;
