@@ -70,7 +70,7 @@ void MemoryModuleInit() {
     bit = i % 32;
     pagenum = i/32;
     // Set the bit to 1
-    freemap[pagenum] = freemap[pagenum] | (1 << bit); 
+    freemap[pagenum] = freemap[pagenum] | (1 << bit);
     nfreepages++;
   }
 
@@ -88,6 +88,7 @@ void MemoryModuleInit() {
 //
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
+
 }
 
 
@@ -126,7 +127,7 @@ int MemoryMoveBetweenSpaces (PCB *pcb, unsigned char *system, unsigned char *use
     // Calculate the number of bytes to copy this time.  If we have more bytes
     // to copy than there are left in the current page, we'll have to just copy to the
     // end of the page and then go through the loop again with the next page.
-    // In other words, "bytesToCopy" is the minimum of the bytes left on this page 
+    // In other words, "bytesToCopy" is the minimum of the bytes left on this page
     // and the total number of bytes left to copy ("n").
 
     // First, compute number of bytes left in this page.  This is just
@@ -135,7 +136,7 @@ int MemoryMoveBetweenSpaces (PCB *pcb, unsigned char *system, unsigned char *use
     // MEM_ADDRESS_OFFSET_MASK should be the bit mask required to get just the
     // "offset" portion of an address.
     bytesToCopy = MEM_PAGESIZE - ((uint32)curUser & MEM_ADDRESS_OFFSET_MASK);
-    
+
     // Now find minimum of bytes in this page vs. total bytes left to copy
     if (bytesToCopy > n) {
       bytesToCopy = n;
@@ -174,17 +175,17 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 }
 
 //---------------------------------------------------------------------
-// MemoryPageFaultHandler is called in traps.c whenever a page fault 
+// MemoryPageFaultHandler is called in traps.c whenever a page fault
 // (better known as a "seg fault" occurs.  If the address that was
-// being accessed is on the stack, we need to allocate a new page 
+// being accessed is on the stack, we need to allocate a new page
 // for the stack.  If it is not on the stack, then this is a legitimate
 // seg fault and we should kill the process.  Returns MEM_SUCCESS
 // on success, and kills the current process on failure.  Note that
-// fault_address is the beginning of the page of the virtual address that 
+// fault_address is the beginning of the page of the virtual address that
 // caused the page fault, i.e. it is the vaddr with the offset zero-ed
 // out.
 //
-// Note: The existing code is incomplete and only for reference. 
+// Note: The existing code is incomplete and only for reference.
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
@@ -193,20 +194,20 @@ int MemoryPageFaultHandler(PCB *pcb) {
   fault_pagenum = pcb->currentSavedFrame[PROCESS_STACK_FAULT] / MEM_PAGESIZE;
   // Page number for user stack
   userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] / MEM_PAGESIZE;
-  
+
   if (fault_pagenum >= userStack_pagenum){
     ProcessKill();
     printf("SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
     return MEM_FAIL;
   }
   // if user stack caused fault and new page allocated
-  else   
+  else
   {
     pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
     pcb->npages++;
     return MEM_SUCCESS;
   }
-  
+
   return MEM_FAIL;
 }
 
@@ -218,23 +219,24 @@ int MemoryPageFaultHandler(PCB *pcb) {
 
 // Find an available bit in freemap, set it, decrement nfreepages and return allocated page number
 int MemoryAllocPage(void) {
-  int i = 0, page_num;
-  uint32 bit;
+  int i = 0, page_num, page_var;
+  uint32 bit = 0;
   //no free pages
   if (nfreepages == 0){
     printf("No free pages in MemoryAllocPage\n");
     return -1;
   }
 
-  //find the available bit
+  //find the freemap index that has an available bit
   while (freemap[i] == 0) i++;
 
-  page_num = freemap[i];
+  page_var = freemap[i];    // the page variable at index i
   // find the bit in the 32 bit integer that is 1(while unavailable, keep looking)
-  while (!(page_num & (1 << bit))) bit++;
-  
+  while (!(page_var & (1 << bit))) bit++;
+
+  freemap[i] |= (0 << bit);   // Mark as unavailable
   page_num = i*32 + bit;
-  MemorySetFreemap(page_num, 0);
+
   nfreepages--;
 
   return page_num;
@@ -248,7 +250,15 @@ uint32 MemorySetupPte (uint32 page) {
 
 
 void MemoryFreePage(uint32 page) {
+  uint32 index = page / 32;
+  uint32 bit_pos = page % 32;
+  freemap[index] |= (1 << bit_pos);
 
   nfreepages++;
 }
 
+
+
+void* malloc(PCB* pcb, int memsize) {
+  return NULL;
+}
