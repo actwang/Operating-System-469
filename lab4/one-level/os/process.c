@@ -445,7 +445,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   pcb->npages ++;
   alloc_pages = MemoryAllocPage();
   pcb->sysStackArea = alloc_pages * MEM_PAGESIZE;
-  stackframe = pcb->sysStackArea + MEM_PAGESIZE - 4;
+  stackframe = (uint32*)(pcb->sysStackArea + MEM_PAGESIZE - 4);
 
 
 
