@@ -59,10 +59,10 @@ void MemoryModuleInit() {
   nfreepages = 0;
   int i, bit, pagenum;
 
-  pagestart = (lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;
+  pagestart = (lastosaddress >> 12) + 1;    //(lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;
 
   for (i = 0 ; i < NUM_PAGES; i++){
-    freemap[i] = 0; //reset the whole freemap
+    freemap[i] = 0; //reset the whole freemap including 0x0--lastosaddress
   }
 
   // Set all non-OS bits to free(1) in the freemap
@@ -267,7 +267,7 @@ uint32 MemorySetupPte (uint32 page) {
   return pte;
 }
 
-
+// Given the page number, set the bit in the freemap to mark it as free
 void MemoryFreePage(uint32 page) {
   uint32 index = page / 32;
   uint32 bit_pos = page % 32;
