@@ -445,7 +445,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   pcb->npages ++;
   alloc_pages = MemoryAllocPage();
   pcb->sysStackArea = alloc_pages * MEM_PAGESIZE;
-  stackframe = (uint32*)(pcb->sysStackArea + MEM_PAGESIZE - 1 - 3); // how to calculate frame size??
+  stackframe = pcb->sysStackArea + MEM_PAGESIZE - 4;
 
 
 
@@ -481,7 +481,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
 
   stackframe[PROCESS_STACK_PTBASE] = (uint32)&pcb->pagetable[0];
   stackframe[PROCESS_STACK_PTBITS] = (MEM_L1FIELD_FIRST_BITNUM << 16) | MEM_L1FIELD_FIRST_BITNUM;
-  stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE
+  stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
