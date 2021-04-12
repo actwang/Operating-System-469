@@ -1,7 +1,15 @@
 #include "usertraps.h"
 #include "misc.h"
 
-#define HELLO_WORLD "hello_world.dlx.obj"
+#define Q2_1 "q2_1.dlx.obj"
+#define Q2_2 "q2_2.dlx.obj"
+#define Q2_3 "q2_3.dlx.obj"
+#define Q2_4 "q2_4.dlx.obj"
+#define Q2_5 "q2_5.dlx.obj"
+#define Q2_6 "q2_6.dlx.obj"
+
+sem_t sem;
+
 
 void main (int argc, char *argv[])
 {
