@@ -999,6 +999,7 @@ int ProcessRealFork(PCB* parent){
   int intrs;
   PCB* child;
   int i;
+  int alloc_page;
 
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
@@ -1024,9 +1025,16 @@ int ProcessRealFork(PCB* parent){
     }
   }
 
+  // Copy parent's PCB into Child's
   bcopy((char)parent, (char*)child, sizeof(PCB));
 
+  if ((alloc_page = MemoryAllocPage()) == MEM_FAIL){
+    printf("FATAL ERROR: could not allocate page in ProcessRealFork.\n");
+    exitsim();
+  }
+  child->sysStackArea = alloc_page * MEM_PAGESIZE;    // Make stack area point to the starting address of the page
 
+  
 
   RestoreIntrs(intrs);
 
