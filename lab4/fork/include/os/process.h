@@ -79,8 +79,6 @@ extern PCB	*currentPCB;
 // grader knows that they are defined in this file.
 //---------------------------------------------------------
 
-
-
 //---------------------------------------------------------
 // Existing function Prototypes
 //---------------------------------------------------------
@@ -101,7 +99,7 @@ void ProcessKill();
 //-------------------------------------------------------
 // Put any functions prototypes that you define here.
 //-------------------------------------------------------
-
+int ProcessRealFork(PCB* );
 
 
 #endif	/* __process_h__ */

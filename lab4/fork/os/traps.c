@@ -536,7 +536,7 @@ dointerrupt (unsigned int cause, unsigned int iar, unsigned int isr,
       MemoryPageFaultHandler(currentPCB);
       break;
     case TRAP_ROP_ACCESS:
-      ROPAccessHandler();
+      MemoryROPAccessHandler();
       break;
     default:
       printf ("Got an unrecognized system interrupt (0x%x) - exiting!\n",

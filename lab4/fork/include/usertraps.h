@@ -62,6 +62,7 @@ int mbox_recv(mbox_t handle, int maxlength, void *data); // trap 0x464
 // Related to process scheduling
 void sleep(int seconds);                //trap 0x465
 void yield();                           //trap 0x466
+int fork(); //trap 0x430
 
 //Related to heap management
 void *malloc(int memsize);              //trap 0x467
