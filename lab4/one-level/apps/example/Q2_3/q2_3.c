@@ -7,7 +7,23 @@ void main (int argc, char *argv[])
 {
   sem_t s_procs_completed; // Semaphore to signal the original process that we're done
 
-  int* mem_adr;
+  /*
+  ///////////////////////////////////////////////////////////////////
+  /User stack (top)
+  /
+  /
+  /
+  /
+  /       Anything in between is acceptable to be considered outside allocated pages
+  /
+  /
+  /Code & data    4 pages
+  /Code & data
+  /Code & data
+  /Code & data
+  ///////////////////////////////////////////////////////////////////
+  */
+  int mem_addr = ;
 
   if (argc != 2) {
     Printf("Usage: %s <handle_to_procs_completed_semaphore>\n");
@@ -18,15 +34,14 @@ void main (int argc, char *argv[])
   s_procs_completed = dstrtol(argv[1], NULL, 10);
 
   // Now print a message to show that everything worked
-  Printf("q2_3 (%d): Access memory outside of currently allocated pages:\n", getpid());
+  Printf("q2_3 (%d): Accessed memory inside virtual address space, but outside of currently allocated pages:\n", getpid());
+  Printf("Accessed memory: %d\n", (*(int*))mem_addr);
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
     Printf("q2_3 (%d): Bad semaphore s_procs_completed (%d)!\n", getpid(), s_procs_completed);
     Exit();
   }
-
-  mem_adr = ()
 
   Printf("q2_1 (%d): Done!\n", getpid());
 }
