@@ -11,11 +11,12 @@
 #include "memory.h"
 #include "queue.h"
 
-// num_pages = size_of_memory / size_of_one_page
 static uint32 freemap[NUM_PAGES];
 static uint32 pagestart;
 static int nfreepages;
 static int freemapmax;
+// Q3
+static int ref_counter[MEM_MAX_PAGES];
 
 //----------------------------------------------------------------------
 //

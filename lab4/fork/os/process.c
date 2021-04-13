@@ -992,3 +992,29 @@ void ProcessKill() {
   ProcessDestroy(currentPCB);
   ProcessSchedule();
 }
+
+int ProcessRealFork(PCB* parent){
+  int intrs;
+  PCB* child;
+
+  intrs = DisableIntrs ();
+  dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
+  dbprintf ('p', "Entering ProcessFork\n");
+  // Get a free PCB for the new process
+  if (AQueueEmpty(&freepcbs)) {
+    printf ("FATAL error: no free processes!\n");
+    exitsim ();	// NEVER RETURNS!
+  }
+  child = (PCB *)AQueueObject(AQueueFirst (&freepcbs));
+  dbprintf ('p', "Got a link @ 0x%x\n", (int)(pcb->l));
+  if (AQueueRemove (&(child->l)) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not remove link from freepcbsQueue in ProcessFork!\n");
+    exitsim();
+  }
+  // This prevents someone else from grabbing this process
+  ProcessSetStatus (child, PROCESS_STATUS_RUNNABLE);
+
+  
+
+  RestoreIntrs(intrs);
+}
