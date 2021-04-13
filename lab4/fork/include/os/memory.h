@@ -27,5 +27,6 @@ void MemoryFreePage(uint32 page) ;
 int MemoryAllocPage(void);
 void *malloc();
 int mfree();
+void incre_refCtr_by_addr(uint32 );
 
 #endif	// _memory_h_

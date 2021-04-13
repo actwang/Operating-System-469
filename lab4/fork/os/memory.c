@@ -281,9 +281,18 @@ void MemoryFreePage(uint32 page) {
 }
 
 
-
 void* malloc(PCB* pcb, int memsize) {
   return NULL;
 }
 
 int mfree(){return 0;}
+
+// Increment reference counter of a particular address
+void incre_refCtr_by_addr(uint32 addr){   
+  int page_num = addr / MEM_PAGESIZE;
+  ref_counter[page_num] ++;
+}
+
+int MemoryROPAccessHandler(PCB* pcb){
+  
+}

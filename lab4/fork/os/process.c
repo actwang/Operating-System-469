@@ -993,9 +993,12 @@ void ProcessKill() {
   ProcessSchedule();
 }
 
+
+// Real Fork
 int ProcessRealFork(PCB* parent){
   int intrs;
   PCB* child;
+  int i;
 
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
@@ -1003,9 +1006,9 @@ int ProcessRealFork(PCB* parent){
   // Get a free PCB for the new process
   if (AQueueEmpty(&freepcbs)) {
     printf ("FATAL error: no free processes!\n");
-    exitsim ();	// NEVER RETURNS!
+    exitsim ();    // NEVER RETURNS!
   }
-  child = (PCB *)AQueueObject(AQueueFirst (&freepcbs));
+  child = (PCB )AQueueObject(AQueueFirst (&freepcbs));
   dbprintf ('p', "Got a link @ 0x%x\n", (int)(pcb->l));
   if (AQueueRemove (&(child->l)) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not remove link from freepcbsQueue in ProcessFork!\n");
@@ -1014,7 +1017,19 @@ int ProcessRealFork(PCB* parent){
   // This prevents someone else from grabbing this process
   ProcessSetStatus (child, PROCESS_STATUS_RUNNABLE);
 
-  
+  for (i = 0; i < MEM_L1TABLE_SIZE; i++) {
+    if (parent->pagetable[i] & MEM_PTE_VALID) {
+      parent->pagetable[i] |= MEM_PTE_READONLY;
+      incre_refCtr_by_addr(parent->pagetable[i]);
+    }
+  }
+
+  bcopy((char)parent, (char*)child, sizeof(PCB));
+
+
 
   RestoreIntrs(intrs);
+
+
+
 }
