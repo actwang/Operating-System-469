@@ -43,5 +43,5 @@ void main (int argc, char *argv[])
     Exit();
   }
 
-  Printf("q2_1 (%d): Done!\n", getpid());
+  Printf("q2_3 (%d): Done!\n", getpid());
 }
