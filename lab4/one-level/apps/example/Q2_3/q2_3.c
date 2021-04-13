@@ -23,7 +23,7 @@ void main (int argc, char *argv[])
   /Code & data
   ///////////////////////////////////////////////////////////////////
   */
-  int mem_addr = ;
+  int mem_addr = 0x0 + 5 * MEM_PAGESIZE;
 
   if (argc != 2) {
     Printf("Usage: %s <handle_to_procs_completed_semaphore>\n");
@@ -35,7 +35,7 @@ void main (int argc, char *argv[])
 
   // Now print a message to show that everything worked
   Printf("q2_3 (%d): Accessed memory inside virtual address space, but outside of currently allocated pages:\n", getpid());
-  Printf("Accessed memory: %d\n", (*(int*))mem_addr);
+  Printf("Accessed memory: %d\n", (* ((int*)(mem_addr)) ) );
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
