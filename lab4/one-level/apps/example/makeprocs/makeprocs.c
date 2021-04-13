@@ -12,7 +12,7 @@
 void main (int argc, char *argv[])
 {
   int test_num = 0;             // Used to store number of processes to create
-  int i;                               // Loop index variable
+  int i,j;                               // Loop index variable
   sem_t s_procs;             // Semaphore used to wait until all spawned processes have completed
   char s_procs_str[10];      // Used as command-line argument to pass page_mapped handle to new processes
 
@@ -40,19 +40,38 @@ void main (int argc, char *argv[])
       sem_wait(s_procs);
     }
     else if (i == 2){
+      s_procs = sem_create(0);
+      ditoa(s_procs, s_procs_str);
       process_create(Q2_2, s_procs_str, NULL);
+      sem_wait(s_procs);
     }
     else if (i == 3){
+      s_procs = sem_create(0);
+      ditoa(s_procs, s_procs_str);
       process_create(Q2_3, s_procs_str, NULL);
+      sem_wait(s_procs);
     }
     else if (i == 4){
+      s_procs = sem_create(0);
+      ditoa(s_procs, s_procs_str);
       process_create(Q2_4, s_procs_str, NULL);
+      sem_wait(s_procs);
     }
     else if (i == 5){
-      process_create(Q2_5, s_procs_str, NULL);
+      s_procs = sem_create(1-100);
+      ditoa(s_procs, s_procs_str);
+      for (j = 0; j < 100; j++){
+        process_create(Q2_5, s_procs_str, NULL);
+      }
+      sem_wait(s_procs);
     }
     else if (i == 6){
-      process_create(Q2_6, s_procs_str, NULL);
+      s_procs = sem_create(1-30);
+      ditoa(s_procs, s_procs_str);
+      for (j = 0; j < 30; j++){
+        process_create(Q2_6, s_procs_str, NULL);
+      }
+      sem_wait(s_procs);
     }
     else {
       Printf("Invalid test number\n");
