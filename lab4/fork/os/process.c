@@ -1000,6 +1000,7 @@ int ProcessRealFork(PCB* parent){
   PCB* child;
   int i;
   int alloc_page;
+  int parentPID, childPID;
 
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
@@ -1032,10 +1033,61 @@ int ProcessRealFork(PCB* parent){
     printf("FATAL ERROR: could not allocate page in ProcessRealFork.\n");
     exitsim();
   }
-  child->sysStackArea = alloc_page * MEM_PAGESIZE;    // Make stack area point to the starting address of the page
 
+  // Stack area should be this many pages
+  child->sysStackArea = alloc_page * MEM_PAGESIZE;   
+
+  bcopy((void*)(currentPCB->sysStackArea), (void*)(child->sysStackArea), MEM_PAGESIZE);
+
+  // Fix Child's fields to the new stack area, otherwise it will still point to parent's
+  child->sysStackPtr = (uint32*)(child->pagetable + ((uint32)currentPCB->sysStackPtr & MEM_ADDRESS_OFFSET_MASK));
+  child->currentSavedFrame = (uint32*) (child->pagetable + (uint32)currentPCB->currentSavedFrame & MEM_ADDRESS_OFFSET_MASK);
+  child->currentSavedFrame[PROCESS_STACK_PTBASE] = (uint32) child->pagetable;
+
+  // if there was a previous saved frame, also fix child's current saved frame at this bit 
+  if (currentPCB->currentSavedFrame[PROCESS_STACK_PREV_FRAME] != 0){
+    child->currentSavedFrame[PROCESS_STACK_PREV_FRAME] = (uint32)(child->sysStackArea + (currentPCB->currentSavedFrame[PROCESS_STACK_PREV_FRAME] & MEM_ADDRESS_OFFSET_MASK));
+  }
+    
+  //Set parent process return value of fork to PID of the child process
+  ProcessSetResult(currentPCB, GetPidFromAddress(child));
   
+  //Set child process return value of fork to 0 
+  ProcessSetResult(child, 0);
+        
+  //Put child PCB onto end of run queue and set child’s status to runnable
+  ProcessSetStatus(child, PROCESS_STATUS_RUNNABLE);
+
+  // Get a link for child 
+  if ((child->l = AQueueAllocLink(child)) == NULL){
+    printf("FATAL ERROR: could not get link for child!\n");
+    exitsim();
+  }
+
+  //insert the link onto the runqueue
+  if (AQueueInsertLast(&runQueue, child->l) != QUEUE_SUCCESS) {
+    printf("FATAL ERROR: could not insert child link!\n");
+    exitsim();
+  }
 
   RestoreIntrs(intrs);
+  
+  //Q4: Print PTE of Parent and child
+  printf("Printing Parent's PTE\n");
+  parentPID = GetPidFromAddress(currentPCB);
+  printf("Parent ID = %d: sysStackArea: 0x%08x\n", parentPID, currentPCB->sysStackArea);
+  printf("Parent ID = %d: sysStackPtr: 0x%08x\n", parentPID, currentPCB->sysStackPtr);
+  printf("Parent ID = %d: CurrentSavedFrame: 0x%08x\n", parentPID, currentPCB->currentSavedFrame);
+  for (i = 0 ; i < MEM_L1TABLE_SIZE; i++){
+    printf("Parent ID = %d: Page # %d has PTE = %d\n", parentPID, i, currentPCB->pagetable[i]);
+  }
 
+  printf("Printing Child's PTE\n");
+  childPID = GetPidFromAddress(child);
+  printf("Child ID = %d: sysStackArea: 0x%08x\n", childPID, child->sysStackArea);
+  printf("Child ID = %d: sysStackPtr: 0x%08x\n", childPID, child->sysStackPtr);
+  printf("Child ID = %d: CurrentSavedFrame: 0x%08x\n", childPID, child->currentSavedFrame);
+  for (i = 0 ; i < MEM_L1TABLE_SIZE; i++){
+    printf("Child ID = %d: Page # %d has PTE = %d\n", childPID, i, child->pagetable[i]);
+  }
 }
