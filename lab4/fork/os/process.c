@@ -1010,8 +1010,8 @@ int ProcessRealFork(PCB* parent){
     printf ("FATAL error: no free processes!\n");
     exitsim ();    // NEVER RETURNS!
   }
-  child = (PCB )AQueueObject(AQueueFirst (&freepcbs));
-  dbprintf ('p', "Got a link @ 0x%x\n", (int)(pcb->l));
+  child = (PCB *)AQueueObject(AQueueFirst (&freepcbs));
+  dbprintf ('p', "Got a link @ 0x%x\n", (int)(child->l));
   if (AQueueRemove (&(child->l)) != QUEUE_SUCCESS) {
     printf("FATAL ERROR: could not remove link from freepcbsQueue in ProcessFork!\n");
     exitsim();
@@ -1054,9 +1054,6 @@ int ProcessRealFork(PCB* parent){
   
   //Set child process return value of fork to 0 
   ProcessSetResult(child, 0);
-        
-  //Put child PCB onto end of run queue and set child’s status to runnable
-  ProcessSetStatus(child, PROCESS_STATUS_RUNNABLE);
 
   // Get a link for child 
   if ((child->l = AQueueAllocLink(child)) == NULL){
