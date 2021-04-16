@@ -1,12 +1,7 @@
 #include "usertraps.h"
 #include "misc.h"
 
-#define Q2_1 "q2_1.dlx.obj"
-#define Q2_2 "q2_2.dlx.obj"
-#define Q2_3 "q2_3.dlx.obj"
-#define Q2_4 "q2_4.dlx.obj"
-#define Q2_5 "q2_5.dlx.obj"
-#define Q2_6 "q2_6.dlx.obj"
+#define HELLO_FORK "fork_apps.dlx.obj"
 
 
 void main (int argc, char *argv[])
@@ -23,58 +18,20 @@ void main (int argc, char *argv[])
 
   // Convert string from ascii command line argument to integer number
   test_num = dstrtol(argv[1], NULL, 10); // the "10" means base 10
-  if (!(test_num >= 1 && test_num <= 6)){
-    Printf("Invalid test number. Enter a number between 1 and 6\n");
-  }
-  Printf("makeprocs (%d): Creating %d test processes\n", getpid(), test_num);
+  Printf("makeprocs (%d): Creating %d test fork processes\n", getpid(), test_num);
 
 
   // Create processes
   Printf("-------------------------------------------------------------------------------------\n");
 
   for(i=0; i < test_num; i++) {
-    if (i == 1){
-      s_procs = sem_create(0);
-      ditoa(s_procs,s_procs_str);
-      process_create(Q2_1, s_procs_str, NULL);
-      sem_wait(s_procs);
-    }
-    else if (i == 2){
-      s_procs = sem_create(0);
-      ditoa(s_procs, s_procs_str);
-      process_create(Q2_2, s_procs_str, NULL);
-      sem_wait(s_procs);
-    }
-    else if (i == 3){
-      s_procs = sem_create(0);
-      ditoa(s_procs, s_procs_str);
-      process_create(Q2_3, s_procs_str, NULL);
-      sem_wait(s_procs);
-    }
-    else if (i == 4){
-      s_procs = sem_create(0);
-      ditoa(s_procs, s_procs_str);
-      process_create(Q2_4, s_procs_str, NULL);
-      sem_wait(s_procs);
-    }
-    else if (i == 5){
-      s_procs = sem_create(1-100);
-      ditoa(s_procs, s_procs_str);
-      for (j = 0; j < 100; j++){
-        process_create(Q2_5, s_procs_str, NULL);
-      }
-      sem_wait(s_procs);
-    }
-    else if (i == 6){
-      s_procs = sem_create(1-30);
-      ditoa(s_procs, s_procs_str);
-      for (j = 0; j < 30; j++){
-        process_create(Q2_6, s_procs_str, NULL);
-      }
-      sem_wait(s_procs);
-    }
-    else {
-      Printf("Invalid test number\n");
+    Printf("test_fork (%d): Creating hello fork #%d\n", getpid(), i);
+    s_procs = sem_create(0);
+    ditoa(s_procs,s_procs_str);
+    process_create(HELLO_FORK, s_procs_str, NULL);
+    if (sem_wait(s_procs) != SYNC_SUCCESS) {
+      Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs_completed, argv[0]);
+      Exit();
     }
   }
 
