@@ -1040,11 +1040,11 @@ int ProcessRealFork(PCB* parent){
   bcopy((void*)(currentPCB->sysStackArea), (void*)(child->sysStackArea), MEM_PAGESIZE);
 
   // Fix Child's fields to the new stack area, otherwise it will still point to parent's
-  child->sysStackPtr = (uint32*)(child->pagetable + ((uint32)currentPCB->sysStackPtr & MEM_ADDRESS_OFFSET_MASK));
-  child->currentSavedFrame = (uint32*) (child->pagetable + (uint32)currentPCB->currentSavedFrame & MEM_ADDRESS_OFFSET_MASK);
+  child->sysStackPtr = (uint32*)(child->sysStackArea + ((uint32)currentPCB->sysStackPtr & MEM_ADDRESS_OFFSET_MASK));
+  child->currentSavedFrame = (uint32*) (child->sysStackArea + (uint32)currentPCB->currentSavedFrame & MEM_ADDRESS_OFFSET_MASK);
   child->currentSavedFrame[PROCESS_STACK_PTBASE] = (uint32) child->pagetable;
 
-  // if there was a previous saved frame, also fix child's current saved frame at this bit 
+  // if there was a previous saved frame, also fix child's current saved frame at PROCESS_STACK_PREV_FRAME 
   if (currentPCB->currentSavedFrame[PROCESS_STACK_PREV_FRAME] != 0){
     child->currentSavedFrame[PROCESS_STACK_PREV_FRAME] = (uint32)(child->sysStackArea + (currentPCB->currentSavedFrame[PROCESS_STACK_PREV_FRAME] & MEM_ADDRESS_OFFSET_MASK));
   }
