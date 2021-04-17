@@ -15,11 +15,17 @@ void main (int argc, char *argv[])
   s_procs_completed = dstrtol(argv[1], NULL, 10);
 
   fork_result = fork();
+  Printf("Before TRAP_ROP_ACCESS PTE:\n");
   if (fork_result == 0) {
     Printf("hello_fork from CHILD (%d): Hello fork!\n", getpid());
   } else {
     Printf("hello_fork from PARENT (%d): Hello fork!\n", getpid());
   }
+  //Print the valid PTE of both parent and child
+
+
+  //Generate TRAP_ROP_ACCESS and print the PTE of parent and child
+
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {

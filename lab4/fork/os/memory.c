@@ -293,6 +293,38 @@ void incre_refCtr_by_addr(uint32 addr){
   ref_counter[page_num] ++;
 }
 
+// Called when a readonly page is accessed. If refct = 1 for this page
+// mark it as read/write. Else allocate new page and copy old page to new page
+// while decrementing refctr. Mark new page as READONLY. Replace old PTE with new PTE
 int MemoryROPAccessHandler(PCB* pcb){
-  
+  uint32 fault_addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT];
+  uint32 page_num = fault_addr / MEM_PAGESIZE;
+  uint32 pid, i;
+  pid = GetPidFromAddress(pcb); 
+  uint32 phys_pagenum = (pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK) / MEM_PAGESIZE;// page number of the PTE
+  uint32 new_page;
+
+  // if this page is only ref'ed by one process
+  if (ref_counter[phys_pagenum] == 1){
+    pcb->pagetable[page_num] &= ~MEM_PTE_READONLY;
+  }
+  else{
+    // Allocate new page 
+    new_page = MemoryAllocPage();
+    // Copy old page to new page and decrement refctr
+    bcopy((void*)(pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK), (void*)(new_page*MEM_PAGESIZE), MEM_PAGESIZE);
+
+    pcb->pagetable[page_num] = MemorySetupPte(new_page);
+    ref_counter[phys_pagenum] --;
+  }
+
+  printf("Process(%d): sysStackPtr: %x\n", pid, pcb->sysStackPtr);
+  printf("Process(%d): sysStackArea: %x\n", pid, pcb->sysStackArea);
+  printf("Process(%d): CurrentSavedFrame: %x\n", pid, pcb->currentSavedFrame);
+  for (i = 0; i < MEM_L1TABLE_SIZE; i++){
+    if (pcb->pagetable[i]) {
+      printf("Process(%d): %d pte: %d\n", pid, i, pcb->pagetable[i]);
+    }
+  }
+  return MEM_SUCCESS;
 }

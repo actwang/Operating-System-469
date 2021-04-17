@@ -16,6 +16,7 @@ static uint32 freemap[NUM_PAGES];
 static uint32 pagestart;
 static int nfreepages;
 static int freemapmax;
+static Queue heap_block;
 
 //----------------------------------------------------------------------
 //
@@ -283,8 +284,15 @@ void MemoryFreePage(uint32 page) {
 
 void* malloc(PCB* pcb, int memsize) {
   int i = 0;
+  int request_size = (memsize%4 == 0)? memsize: (memsize / 4 + 1) *4;
+  Link* l = AQueueFirst(&pcb->heap_array);
 
-  if ((memsize > ))
+
+  if (memsize <= 0){
+    printf("Invalid memsize in malloc.\n");
+    return NULL;
+  }
+
   return NULL;
 }
 
