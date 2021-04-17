@@ -30,7 +30,7 @@ void main (int argc, char *argv[])
     ditoa(s_procs,s_procs_str);
     process_create(HELLO_FORK, s_procs_str, NULL);
     if (sem_wait(s_procs) != SYNC_SUCCESS) {
-      Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs_completed, argv[0]);
+      Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs, argv[0]);
       Exit();
     }
   }

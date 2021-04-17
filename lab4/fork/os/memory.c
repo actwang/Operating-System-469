@@ -14,7 +14,7 @@
 static uint32 freemap[NUM_PAGES];
 static uint32 pagestart;
 static int nfreepages;
-static int freemapmax;
+//static int freemapmax;
 // Q3
 static int ref_counter[MEM_MAX_PAGES];
 
@@ -300,9 +300,9 @@ int MemoryROPAccessHandler(PCB* pcb){
   uint32 fault_addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT];
   uint32 page_num = fault_addr / MEM_PAGESIZE;
   uint32 pid, i;
-  pid = GetPidFromAddress(pcb); 
   uint32 phys_pagenum = (pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK) / MEM_PAGESIZE;// page number of the PTE
   uint32 new_page;
+  pid = GetPidFromAddress(pcb); 
 
   // if this page is only ref'ed by one process
   if (ref_counter[phys_pagenum] == 1){

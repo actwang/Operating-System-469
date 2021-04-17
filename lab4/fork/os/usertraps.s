@@ -270,7 +270,7 @@ _mfree:
 
 .proc _fork
 .global _fork
-_mfree:
+_fork:
         trap    #0x430
         jr      r31
 .endproc _fork
