@@ -39,6 +39,10 @@
 
 #define MEM_MALLOC_MAX_NUM     256
 
+// Q5 HEAP
+#define MEM_HEAP_ORDER0 32
+#define MEM_HEAP_ORDER0_NUM (MEM_PAGESIZE / MEM_HEAP_ORDER0)
+#define MEM_HEAP_PTE_PAGE 4
 
 //--------------------------------------------------------
 

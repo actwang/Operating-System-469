@@ -282,6 +282,9 @@ void MemoryFreePage(uint32 page) {
 
 
 void* malloc(PCB* pcb, int memsize) {
+  int i = 0;
+
+  if ((memsize > ))
   return NULL;
 }
 
