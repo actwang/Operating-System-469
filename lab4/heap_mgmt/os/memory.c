@@ -380,7 +380,6 @@ int mfree(PCB* pcb, void* ptr){
   return Hnode->heapSize;
 }
 
-
 void MemoryMergeNodes(heapNode* Hnode){
   if (!Hnode){return void;}
 
@@ -392,15 +391,20 @@ void MemoryMergeNodes(heapNode* Hnode){
     return;
   }
 
-
   // if current node is left node
   if (Hnode == Hnode->parent->left){
     if (Hnode->parent->right->heapUsage == 0){    // if we meet adjacent node inuse then we stop
+      printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeorder, Hnode->nodeAddress, Hnode->heapSize);
+      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->right->nodeorder, Hnode->parent->right->nodeAddress, Hnode->parent->right->heapSize);
+      printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeorder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
       MemoryMergeNodes(Hnode->parent);
     }
   }
   else{   // current node is right node
     if (Hnode->parent->left->heapUsage == 0){
+      printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeorder, Hnode->nodeAddress, Hnode->heapSize);
+      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->left->nodeorder, Hnode->parent->left->nodeAddress, Hnode->parent->left->heapSize);
+      printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeorder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
       MemoryMergeNodes(Hnode->parent);
     }
   }
