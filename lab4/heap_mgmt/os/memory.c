@@ -290,16 +290,118 @@ void* malloc(PCB* pcb, int memsize) {
     return NULL;
   }
 
-  node_address = MemoryNodeSearch(&(pcb->heap_array[1]), pcb, memsize);
-  if (node_address >= 0) {
-    size = pcb->heap_array[node_address].size;
-    virt_address = ((MEM_PAGESIZE * 4) | block);
-    physical_address = MemoryTranslateUserToSystem(pcb, virtual_address);
-    printf("Created a heap block of size %d bytes: virtual address %d, physical address %d\n", size, virtual_address, physical_address);
-    return (void *) virtual_address;
-  }
+  node_address = MallocNodeHelper(&(pcb->heap_array[0]), pcb, memsize);
 
+  if (node_address >= 0) {
+    heap_size = pcb->heap_array[node_address].heapSize;
+    virt_address = ((MEM_PAGESIZE * 4) | node_address);
+    phys_address = MemoryTranslateUserToSystem(pcb, virt_address);
+    printf("Malloc a heap of size %d bytes: virtual address %d, physical address %d\n", heap_size, virt_address, phys_address);
+    return (void*)virt_address;
+  }
   return NULL;
 }
 
-int mfree(){return 0;}
+
+int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
+  int tmp_addr;
+  heapNode* left_child, right_child;
+
+  if (node == NULL) return -1;
+  if ((node->leftChild == NULL) && (node->heapUsage == 0)) {
+    if ((memsize <= node->heapSize) && (memsize > (node->heapSize / 2))) {
+      node->heapUsage = 1;
+      printf("Allocated the block: order = %d, addr = %d, requested mem size = %d, block size = %d\n", node->nodeOrder, node->nodeAddress, memsize, node->heapSize);
+      return node->nodeAddress;
+    }
+
+    if (memsize > (node->heapSize / 2)) {
+      return -1;
+    } else if (node->nodeOrder == 0) {
+      return -1;
+    } else {
+      left_child = &(pcb->heap_array[2*node->nodeIndex]);
+      *left_child = {
+        // link left&right to NULL?
+        .parent = node,
+        .heapSize = node->heapSize / 2,
+        .nodeOrder = node->nodeOrder - 1,
+        .nodeAddress = node->nodeAddress,
+      };
+      printf("Created a left child node (order = %d, addr = %d, size = %d) of parent (order = %d, addr = %d, size = %d)\n",
+                                                left_child->nodeOrder, left_child->nodeAddress, left_child->heapSize,
+                                                node->nodeOrder, node->nodeAddress, node->heapSize);
+
+      right_child = &(pcb->heap_array[2*node->nodeIndex + 1]);
+      *right_child = {
+        // link left&right to NULL?
+        .parent = node,
+        .heapSize = node->heapSize / 2,
+        .nodeOrder = node->nodeOrder - 1,
+      };
+      right_child->nodeAddress = (node->nodeAddress) + (right_child->heapSize);
+      printf("Created a right child node (order = %d, addr = %d, size = %d) of parent (order = %d, addr = %d, size = %d)\n",
+                                                right_child->nodeOrder, right_child->nodeAddress, right_child->heapSize,
+                                                node->nodeOrder, node->nodeAddress, node->heapSize);
+
+      node->leftChild = left_child;
+      node->rightChild = right_child;
+    }
+  }
+
+  tmp_addr = MallocNodeHelper(node->leftChild, pcb, memsize);
+  if (tmp_addr >= 0) {
+    return tmp_addr;
+  } else {
+    return MallocNodeHelper(node->rightChild, pcb, memsize);
+  }
+}
+
+
+
+int mfree(PCB* pcb, void* ptr){
+  int addr, i, sz;
+  heapNode* Hnode;
+
+  if (!ptr){return MEM_FAIL;}
+
+  addr = ((int)ptr & MEM_ADDRESS_OFFSET_MASK);
+  for (i = 0; i < MEM_MALLOC_MAX_NUM; i++){
+    if (pcb->heap_array.nodeAddress == addr){
+      sz = pcb->heap_array[i].heapSize;
+      Hnode = &(pcb->heap_array[i]);
+      break;
+    }
+  }
+
+  dbprintf('m',"Freeing %d byte block @ virtual addr %d\n",sz,(int)ptr);
+  MemoryMergeNodes(Hnode);
+
+  return Hnode->heapSize;
+}
+
+
+void MemoryMergeNodes(heapNode* Hnode){
+  if (!Hnode){return void;}
+
+  Hnode->heapUsage = 0; // Not in use anymore
+  Hnode->leftChild = NULL; Hnode->rightChild = NULL;
+
+  // While we're not at the root node
+  if (Hnode->parent == NULL){
+    return;
+  }
+
+
+  // if current node is left node
+  if (Hnode == Hnode->parent->left){
+    if (Hnode->parent->right->heapUsage == 0){    // if we meet adjacent node inuse then we stop
+      MemoryMergeNodes(Hnode->parent);
+    }
+  }
+  else{   // current node is right node
+    if (Hnode->parent->left->heapUsage == 0){
+      MemoryMergeNodes(Hnode->parent);
+    }
+  }
+}

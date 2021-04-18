@@ -48,14 +48,16 @@ typedef struct PCB {
 } PCB;
 
 typedef struct heapNode {
-  struct heapNode *parent
-  struct heapNode *leftChild
-  struct heapNode *rightChild
+  struct heapNode *parent;
+  struct heapNode *leftChild;
+  struct heapNode *rightChild;
 
   int heapUsage;
   int heapSize;
-  int nodeLevel;
+  int nodeOrder;
   int nodeAddress;
+
+  int nodeIndex;
 
 
 } heapNode

@@ -27,7 +27,12 @@ void MemoryFreePage(uint32 page) ;
 int MemoryAllocPage(void);
 
 
-void *malloc();
-int mfree();
+//void *malloc();
+void* malloc(PCB* pcb, int memsize);
+//int mfree();
+int mfree(PCB* pcb, void* ptr);
+
+int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize);
+void MemoryMergeNodes(heapNode* Hnode);
 
 #endif	// _memory_h_
