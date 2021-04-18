@@ -54,7 +54,7 @@ typedef struct heapNode {
 
   int heapUsage;
   int heapSize;
-  int nodeLevel;
+  int nodeOrder;
   int nodeAddress;
 
 
