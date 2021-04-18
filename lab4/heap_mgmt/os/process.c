@@ -449,9 +449,23 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   stackframe = (uint32*)(pcb->sysStackArea + MEM_PAGESIZE - 4);
 
   for (i = 0; i < MEM_MALLOC_MAX_NUM; i++) {
-    pcb->heap_array[i] = 0;
+    pcb->heap_array[i].parent = NULL;
+    pcb->heap_array[i].leftChild = NULL;
+    pcb->heap_array[i].rightChild = NULL;
+
+    pcb->heap_array[i].heapUsage = 0;
+    pcb->heap_array[i].heapSize = 0;
+    pcb->heap_array[i].nodeOrder = -1;
+    pcb->heap_array[i].nodeAddress = -1;
+
+    pcb->heap_array[i].nodeIndex = i;
   }
 
+  pcb->heap_array[0] = {
+    .heapSize = MEM_PAGESIZE,
+    .nodeOrder = 7,
+    .nodeAddress = 0,
+  };
 
 
 

@@ -57,7 +57,8 @@ typedef struct heapNode {
   int nodeOrder;
   int nodeAddress;
 
-
+  int nodeIndex;
+  
 } heapNode
 
 extern PCB	*currentPCB;
