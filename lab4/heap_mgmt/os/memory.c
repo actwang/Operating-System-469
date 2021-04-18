@@ -307,7 +307,7 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
   int tmp_addr;
   heapNode* left_child, right_child;
 
-  if (node == NULL) return -1;
+  if (!node) return -1;
   if ((node->leftChild == NULL) && (node->heapUsage == 0)) {
     if ((memsize <= node->heapSize) && (memsize > (node->heapSize / 2))) {
       node->heapUsage = 1;
@@ -320,9 +320,8 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
     } else if (node->nodeOrder == 0) {
       return -1;
     } else {
-      left_child = &(pcb->heap_array[2*node->nodeIndex]);
+      left_child = &(pcb->heap_array[2 * node->nodeIndex]);
       *left_child = {
-        // link left&right to NULL?
         .parent = node,
         .heapSize = node->heapSize / 2,
         .nodeOrder = node->nodeOrder - 1,
@@ -334,7 +333,6 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
 
       right_child = &(pcb->heap_array[2*node->nodeIndex + 1]);
       *right_child = {
-        // link left&right to NULL?
         .parent = node,
         .heapSize = node->heapSize / 2,
         .nodeOrder = node->nodeOrder - 1,
