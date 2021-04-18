@@ -43,10 +43,22 @@ typedef struct PCB {
   int		npages;		// Number of pages allocated to this process
   Link		*l;		// Used for keeping PCB in queues
 
-  uint32  *first_heap_base;
-  char    heap_array[MEM_MALLOC_MAX_NUM];
+  heapNode    heap_array[MEM_MALLOC_MAX_NUM];
 
 } PCB;
+
+typedef struct heapNode {
+  struct heapNode *parent
+  struct heapNode *leftChild
+  struct heapNode *rightChild
+
+  int heapUsage;
+  int heapSize;
+  int nodeLevel;
+  int nodeAddress;
+
+
+} heapNode
 
 extern PCB	*currentPCB;
 
