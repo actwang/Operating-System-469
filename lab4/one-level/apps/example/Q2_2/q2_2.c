@@ -19,6 +19,7 @@ void main (int argc, char *argv[])
 
   // Now print a message to show that everything worked
   Printf("q2_2 (%d): Access memory beyond the maximum virtual address\n", getpid());
+ 
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
@@ -27,9 +28,8 @@ void main (int argc, char *argv[])
   }
 
   mem_adr = (MEM_MAX_VIRTUAL_ADDRESS + 1);
-
   Printf("Try to access memory location: %d\n", mem_adr);
-  Printf("The address value is: %d\n", *mem_adr);
+  Printf("Accessed memory: %d\n", (* ((int*)(mem_adr)) ) );
 
-  Printf("q2_1 (%d): Done!\n", getpid());
+  Printf("q2_2 (%d): Done!\n", getpid());
 }
