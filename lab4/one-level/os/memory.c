@@ -219,8 +219,8 @@ int MemoryPageFaultHandler(PCB *pcb) {
   userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] >> MEM_L1FIELD_FIRST_BITNUM;
   
   if (fault_pagenum < userStack_pagenum){
-    ProcessKill();
     printf("SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
+    ProcessKill();
     return MEM_FAIL;
   }
   // if user stack caused fault and new page allocated
