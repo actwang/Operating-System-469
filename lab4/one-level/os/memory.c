@@ -224,14 +224,11 @@ int MemoryPageFaultHandler(PCB *pcb) {
     return MEM_FAIL;
   }
   // if user stack caused fault and new page allocated
-  else   
-  {
-    pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
-    pcb->npages++;
-    return MEM_SUCCESS;
-  }
+
+  pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
+  pcb->npages++;
+  return MEM_SUCCESS;
   
-  return MEM_FAIL;
 }
 
 
