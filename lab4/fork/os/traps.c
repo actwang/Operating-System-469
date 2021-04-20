@@ -520,12 +520,12 @@ dointerrupt (unsigned int cause, unsigned int iar, unsigned int isr,
       break;
     case TRAP_ACCESS:
       printf ("Exiting after illegal access at iar=0x%x, isr=0x%x\n", iar, isr);
-      exitsim ();
+      ProcessKill ();
       break;
     case TRAP_ADDRESS:
       printf ("Exiting after illegal address at iar=0x%x, isr=0x%x\n",
 	      iar, isr);
-      exitsim ();
+      ProcessKill ();
       break;
     case TRAP_ILLEGALINST:
       printf ("Exiting after illegal instruction at iar=0x%x, isr=0x%x\n",

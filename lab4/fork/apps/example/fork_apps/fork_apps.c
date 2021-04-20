@@ -22,10 +22,7 @@ void main (int argc, char *argv[])
     Printf("hello_fork from PARENT (%d): Hello fork!\n", getpid());
   }
   //Print the valid PTE of both parent and child
-
-
   //Generate TRAP_ROP_ACCESS and print the PTE of parent and child
-
 
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
