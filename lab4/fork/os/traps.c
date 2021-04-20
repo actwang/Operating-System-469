@@ -533,6 +533,7 @@ dointerrupt (unsigned int cause, unsigned int iar, unsigned int isr,
       exitsim ();
       break;
     case TRAP_PAGEFAULT:
+    printf("Memory page fault trap\n");
       MemoryPageFaultHandler(currentPCB);
       break;
     case TRAP_ROP_ACCESS:
