@@ -18,7 +18,7 @@ void main (int argc, char argv[])
   }
   Printf("test1 allocated\n");
 
-  r1 = mfree((void)test1);
+  r1 = mfree((void*)test1);
   Printf("test1 freed (%d bytes freed)\n", r1);
   Printf("-------------------------------------------------------------------------------------\n");
 
@@ -29,7 +29,7 @@ void main (int argc, char argv[])
     Printf("Fail to malloc for test2 in test_heap\n");
   }
   Printf("test2 allocated\n");
-  r2 = mfree((void)test2);
+  r2 = mfree((void*)test2);
   Printf("test2 freed (%d bytes freed)\n", r2);
   Printf("-------------------------------------------------------------------------------------\n");
 
@@ -40,7 +40,7 @@ void main (int argc, char argv[])
     Printf("Fail to malloc for test3 in test_heap\n");
   }
   Printf("test3 allocated\n");
-  r3 = mfree((void)test3);
+  r3 = mfree((void*)test3);
   Printf("test3 freed (%d bytes freed)\n", r3);
   Printf("-------------------------------------------------------------------------------------\n");
 
