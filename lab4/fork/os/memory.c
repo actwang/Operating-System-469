@@ -57,20 +57,20 @@ int MemoryGetSize() {
 //
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
-  
   int i;
   int bit;
-  int pagenum;
+  int pagenum; 
+  int maxpage = MemoryGetSize() / MEM_PAGESIZE;
   nfreepages = 0;
 
-  pagestart = (lastosaddress >> 12) + 1;    //(lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;
+  pagestart = (lastosaddress + MEM_PAGESIZE - 4) / MEM_PAGESIZE;
 
   for (i = 0 ; i < NUM_PAGES; i++){
     freemap[i] = 0; //reset the whole freemap including 0x0--lastosaddress
   }
 
   // Set all non-OS bits to free(1) in the freemap
-  for (i = pagestart ; i < MEM_MAX_PAGES ; i ++){
+  for (i = pagestart ; i < maxpage ; i ++){
     //find the bit position of the bit we want to set
     bit = i % 32;
     pagenum = i/32;
@@ -100,8 +100,6 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
 
   page_num = addr >> MEM_L1FIELD_FIRST_BITNUM;
   page_offset = addr & 0xFFF;
-
-  phys_addr = (pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK) | page_offset;
   
   // Check if it's valid. If not, we need to trigger a page fault handler
   if ( (pcb->pagetable[page_num] & MEM_PTE_VALID) == 0){
@@ -109,8 +107,9 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
     pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
     // Call page fault handler
     MemoryPageFaultHandler(pcb);
-    return 0;
   }
+
+  phys_addr = (pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK) | page_offset;
 
   return phys_addr;
 }
@@ -217,7 +216,7 @@ int MemoryPageFaultHandler(PCB *pcb) {
   // Page number of the faulting address
   fault_pagenum = pcb->currentSavedFrame[PROCESS_STACK_FAULT] >> MEM_L1FIELD_FIRST_BITNUM;
   // Page number for user stack
-  userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] >> MEM_L1FIELD_FIRST_BITNUM;
+   userStack_pagenum = (pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] - PROCESS_STACK_FRAME_SIZE) >> MEM_L1FIELD_FIRST_BITNUM;
   
   if (fault_pagenum < userStack_pagenum){
     dbprintf('m',"SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");

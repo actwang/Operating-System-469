@@ -143,8 +143,8 @@ void ProcessFreeResources (PCB *pcb) {
   for (i = 0; i < MEM_L1TABLE_SIZE; i++){
     //if PTE valid bit is 1, free that PTE
     if (pcb->pagetable[i] & MEM_PTE_VALID){
-      MemoryFreePage((pcb->pagetable[i] & MEM_PTE2PAGE_MASK) | MEM_PTE_VALID);
-      pcb->pagetable[i] &= MEM_PTE2PAGE_MASK;
+      MemoryFreePage((pcb->pagetable[i] & MEM_PTE2PAGE_MASK) / MEM_PAGESIZE);
+      pcb->pagetable[i] = 0;
     }
   }
   //free system stack

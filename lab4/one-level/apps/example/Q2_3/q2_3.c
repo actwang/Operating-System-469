@@ -33,15 +33,15 @@ void main (int argc, char *argv[])
   // Convert the command-line strings into integers for use as handles
   s_procs_completed = dstrtol(argv[1], NULL, 10);
 
-  // Now print a message to show that everything worked
-  Printf("q2_3 (%d): Accessed memory inside virtual address space, but outside of currently allocated pages:\n", getpid());
-  Printf("Accessed memory: %d\n", *mem_addr);
-
   // Signal the semaphore to tell the original process that we're done
   if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
     Printf("q2_3 (%d): Bad semaphore s_procs_completed (%d)!\n", getpid(), s_procs_completed);
     Exit();
   }
-
+  
+  // Now print a message to show that everything worked
+  Printf("q2_3 (%d): Accessed memory inside virtual address space, but outside of currently allocated pages:\n", getpid());
+  Printf("Accessed memory: %d\n", *(int*)mem_addr);
+  Printf("NNNNNNNNNN\n");
   Printf("q2_3 (%d): Done!\n", getpid());
 }
