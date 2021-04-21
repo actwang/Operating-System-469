@@ -32,6 +32,20 @@
 
 typedef	void (*VoidFunc)();
 
+typedef struct heapNode {
+  struct heapNode *parent;
+  struct heapNode *leftChild;
+  struct heapNode *rightChild;
+
+  int heapUsage;
+  int heapSize;
+  int nodeOrder;
+  int nodeAddress;
+
+  int nodeIndex;
+
+} heapNode;
+
 // Process control block
 typedef struct PCB {
   uint32	*currentSavedFrame; // -> current saved frame.  MUST BE 1ST!
@@ -47,19 +61,7 @@ typedef struct PCB {
 
 } PCB;
 
-typedef struct heapNode {
-  struct heapNode *parent;
-  struct heapNode *leftChild;
-  struct heapNode *rightChild;
 
-  int heapUsage;
-  int heapSize;
-  int nodeOrder;
-  int nodeAddress;
-
-  int nodeIndex;
-
-} heapNode
 
 extern PCB	*currentPCB;
 

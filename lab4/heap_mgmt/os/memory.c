@@ -390,19 +390,19 @@ void MemoryMergeNodes(heapNode* Hnode){
   }
 
   // if current node is left node
-  if (Hnode == Hnode->parent->left){
-    if (Hnode->parent->right->heapUsage == 0){    // if we meet adjacent node inuse then we stop
-      printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeorder, Hnode->nodeAddress, Hnode->heapSize);
-      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->right->nodeorder, Hnode->parent->right->nodeAddress, Hnode->parent->right->heapSize);
-      printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeorder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
+  if (Hnode == Hnode->parent->leftChild){
+    if (Hnode->parent->rightChild->heapUsage == 0){    // if we meet adjacent node inuse then we stop
+      printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeOrder, Hnode->nodeAddress, Hnode->heapSize);
+      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->right->nodeOrder, Hnode->parent->rightChild->nodeAddress, Hnode->parent->rightChild->heapSize);
+      printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeOrder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
       MemoryMergeNodes(Hnode->parent);
     }
   }
   else{   // current node is right node
-    if (Hnode->parent->left->heapUsage == 0){
-      printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeorder, Hnode->nodeAddress, Hnode->heapSize);
-      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->left->nodeorder, Hnode->parent->left->nodeAddress, Hnode->parent->left->heapSize);
-      printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeorder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
+    if (Hnode->parent->leftChild->heapUsage == 0){
+      printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeOrder, Hnode->nodeAddress, Hnode->heapSize);
+      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->left->nodeOrder, Hnode->parent->leftChild->nodeAddress, Hnode->parent->leftChild->heapSize);
+      printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeOrder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
       MemoryMergeNodes(Hnode->parent);
     }
   }
