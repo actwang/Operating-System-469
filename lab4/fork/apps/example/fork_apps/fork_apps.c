@@ -3,31 +3,29 @@
 
 void main (int argc, char *argv[])
 {
-  sem_t s_procs_completed; // Semaphore to signal the original process that we're done
-  int fork_result;
+  int fork_result, var = 1183;
 
-  if (argc != 2) {
-    Printf("Usage: %s <handle_to_procs_completed_semaphore>\n");
+  if (argc != 1) {
     Exit();
   }
 
-  // Convert the command-line strings into integers for use as handles
-  s_procs_completed = dstrtol(argv[1], NULL, 10);
-
+  //Print the valid PTE of both parent and child
   fork_result = fork();
   Printf("Before TRAP_ROP_ACCESS PTE:\n");
-  if (fork_result == 0) {
-    Printf("hello_fork from CHILD (%d): Hello fork!\n", getpid());
-  } else {
-    Printf("hello_fork from PARENT (%d): Hello fork!\n", getpid());
-  }
-  //Print the valid PTE of both parent and child
+  
   //Generate TRAP_ROP_ACCESS and print the PTE of parent and child
-
-  // Signal the semaphore to tell the original process that we're done
-  if(sem_signal(s_procs_completed) != SYNC_SUCCESS) {
-    Printf("hello_fork (%d): Bad semaphore s_procs_completed (%d)!\n", getpid(), s_procs_completed);
-    Exit();
+  if (fork_result == 0) {
+    // Child process
+    Printf("hello_fork from CHILD (%d): Hello fork!\n", getpid());
+    Printf("hello fork from CHILD (%d), var was %d\n",getpid(),var);
+    var = 2130;
+    Printf("hello fork from CHILD (%d), var after is %d\n",getpid(),var);
+  } else {
+    //parent process
+    Printf("hello_fork from PARENT (%d): Hello fork!\n", getpid());
+    Printf("hello fork from PARENT (%d), var was %d\n",getpid(),var);
+    var = 808;
+    Printf("hello fork from PARENT (%d), var after is %d\n",getpid(),var);
   }
 
   Printf("hello_fork (%d): Done!\n", getpid());
