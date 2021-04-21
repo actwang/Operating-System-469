@@ -218,6 +218,7 @@ int MemoryPageFaultHandler(PCB *pcb) {
   // Page number for user stack
   userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] >> MEM_L1FIELD_FIRST_BITNUM;
   
+  printf("Fault pagenum = %d, userStackPagenum = %d\n",fault_pagenum, userStack_pagenum);
   if (fault_pagenum < userStack_pagenum){
     dbprintf('m',"SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
     ProcessKill();
