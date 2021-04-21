@@ -1027,7 +1027,7 @@ int ProcessRealFork(PCB* parent){
   }
 
   // Copy parent's PCB into Child's
-  bcopy((char)parent, (char*)child, sizeof(PCB));
+  bcopy((char*)parent, (char*)child, sizeof(PCB));
 
   if ((alloc_page = MemoryAllocPage()) == MEM_FAIL){
     printf("FATAL ERROR: could not allocate page in ProcessRealFork.\n");

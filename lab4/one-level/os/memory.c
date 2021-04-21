@@ -212,7 +212,7 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
-  unsigned int fault_pagenum, userStack_pagenum;
+  int fault_pagenum, userStack_pagenum;
   // Page number of the faulting address
   fault_pagenum = pcb->currentSavedFrame[PROCESS_STACK_FAULT] >> MEM_L1FIELD_FIRST_BITNUM;
   // Page number for user stack
