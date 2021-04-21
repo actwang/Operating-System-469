@@ -435,7 +435,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
     pcb->pagetable[i] = MemorySetupPte(alloc_pages);
   }
 
-  pcb->first_heap_base = 4 << MEM_L1FIELD_FIRST_BITNUM;
+  //pcb->first_heap_base = 4 << MEM_L1FIELD_FIRST_BITNUM;
 
   // 1 page for User stack
   pcb->npages ++;
@@ -461,11 +461,9 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
     pcb->heap_array[i].nodeIndex = i;
   }
 
-  pcb->heap_array[0] = {
-    .heapSize = MEM_PAGESIZE,
-    .nodeOrder = 7,
-    .nodeAddress = 0,
-  };
+  pcb->heap_array[0].heapSize = MEM_PAGESIZE;
+  pcb->heap_array[0].nodeOrder = 7;
+  pcb->heap_array[0].nodeAddress = 0;
 
 
 

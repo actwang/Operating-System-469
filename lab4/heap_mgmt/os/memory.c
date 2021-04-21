@@ -217,20 +217,20 @@ int MemoryPageFaultHandler(PCB *pcb) {
   fault_pagenum = pcb->currentSavedFrame[PROCESS_STACK_FAULT] >> MEM_L1FIELD_FIRST_BITNUM;
   // Page number for user stack
   userStack_pagenum = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER] >> MEM_L1FIELD_FIRST_BITNUM;
-  
+
   if (fault_pagenum < userStack_pagenum){
     dbprintf('m',"SegFault(fault address higher than user stack pointer) in Memory Page Fault Handler.\n");
     ProcessKill();
     return MEM_FAIL;
   }
   // if user stack caused fault and new page allocated
-  else   
+  else
   {
     pcb->pagetable[fault_pagenum] = MemorySetupPte(MemoryAllocPage());
     pcb->npages++;
     return MEM_SUCCESS;
   }
-  
+
   return MEM_FAIL;
 }
 
@@ -305,7 +305,8 @@ void* malloc(PCB* pcb, int memsize) {
 
 int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
   int tmp_addr;
-  heapNode* left_child, right_child;
+  heapNode* left_child;
+  heapNode* right_child;
 
   if (!node) return -1;
   if ((node->leftChild == NULL) && (node->heapUsage == 0)) {
@@ -321,22 +322,18 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
       return -1;
     } else {
       left_child = &(pcb->heap_array[2 * node->nodeIndex]);
-      *left_child = {
-        .parent = node,
-        .heapSize = node->heapSize / 2,
-        .nodeOrder = node->nodeOrder - 1,
-        .nodeAddress = node->nodeAddress,
-      };
+      left_child->parent = node;
+      left_child->heapSize = node->heapSize / 2;
+      left_child->nodeOrder = node->nodeOrder - 1;
+      left_child->nodeAddress = node->nodeAddress;
       printf("Created a left child node (order = %d, addr = %d, size = %d) of parent (order = %d, addr = %d, size = %d)\n",
                                                 left_child->nodeOrder, left_child->nodeAddress, left_child->heapSize,
                                                 node->nodeOrder, node->nodeAddress, node->heapSize);
 
       right_child = &(pcb->heap_array[2*node->nodeIndex + 1]);
-      *right_child = {
-        .parent = node,
-        .heapSize = node->heapSize / 2,
-        .nodeOrder = node->nodeOrder - 1,
-      };
+      right_child->parent = node;
+      right_child->heapSize = node->heapSize / 2;
+      right_child->nodeOrder = node->nodeOrder - 1;
       right_child->nodeAddress = (node->nodeAddress) + (right_child->heapSize);
       printf("Created a right child node (order = %d, addr = %d, size = %d) of parent (order = %d, addr = %d, size = %d)\n",
                                                 right_child->nodeOrder, right_child->nodeAddress, right_child->heapSize,
@@ -365,7 +362,7 @@ int mfree(PCB* pcb, void* ptr){
 
   addr = ((int)ptr & MEM_ADDRESS_OFFSET_MASK);
   for (i = 0; i < MEM_MALLOC_MAX_NUM; i++){
-    if (pcb->heap_array.nodeAddress == addr){
+    if (pcb->heap_array[i].nodeAddress == addr){
       sz = pcb->heap_array[i].heapSize;
       Hnode = &(pcb->heap_array[i]);
       break;
@@ -379,7 +376,7 @@ int mfree(PCB* pcb, void* ptr){
 }
 
 void MemoryMergeNodes(heapNode* Hnode){
-  if (!Hnode){return void;}
+  if (!Hnode){return;}
 
   Hnode->heapUsage = 0; // Not in use anymore
   Hnode->leftChild = NULL; Hnode->rightChild = NULL;
@@ -393,7 +390,7 @@ void MemoryMergeNodes(heapNode* Hnode){
   if (Hnode == Hnode->parent->leftChild){
     if (Hnode->parent->rightChild->heapUsage == 0){    // if we meet adjacent node inuse then we stop
       printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeOrder, Hnode->nodeAddress, Hnode->heapSize);
-      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->right->nodeOrder, Hnode->parent->rightChild->nodeAddress, Hnode->parent->rightChild->heapSize);
+      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->rightChild->nodeOrder, Hnode->parent->rightChild->nodeAddress, Hnode->parent->rightChild->heapSize);
       printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeOrder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
       MemoryMergeNodes(Hnode->parent);
     }
@@ -401,7 +398,7 @@ void MemoryMergeNodes(heapNode* Hnode){
   else{   // current node is right node
     if (Hnode->parent->leftChild->heapUsage == 0){
       printf("Coalesced buddy nodes (order = %d, addr = %d, size = %d) & ", Hnode->nodeOrder, Hnode->nodeAddress, Hnode->heapSize);
-      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->left->nodeOrder, Hnode->parent->leftChild->nodeAddress, Hnode->parent->leftChild->heapSize);
+      printf("(order = %d, addr = %d, size = %d)\n",Hnode->parent->leftChild->nodeOrder, Hnode->parent->leftChild->nodeAddress, Hnode->parent->leftChild->heapSize);
       printf("into the parent node (order = %d, addr = %d, size = %d)\n", Hnode->parent->nodeOrder, Hnode->parent->nodeAddress, Hnode->parent->heapSize);
       MemoryMergeNodes(Hnode->parent);
     }
