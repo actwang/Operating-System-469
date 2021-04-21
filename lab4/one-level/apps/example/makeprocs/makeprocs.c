@@ -46,6 +46,7 @@ void main (int argc, char *argv[])
       s_procs = sem_create(0);
       ditoa(s_procs, s_procs_str);
       process_create(Q2_2, s_procs_str, NULL);
+      printf("SEMWAIT\n");
       sem_wait(s_procs);
     }
     else if (i == 3){
