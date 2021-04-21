@@ -1076,6 +1076,7 @@ int ProcessRealFork(PCB* parent){
   printf("Parent ID = %d: sysStackPtr: 0x%08x\n", parentPID, currentPCB->sysStackPtr);
   printf("Parent ID = %d: CurrentSavedFrame: 0x%08x\n", parentPID, currentPCB->currentSavedFrame);
   for (i = 0 ; i < MEM_L1TABLE_SIZE; i++){
+    if (currentPCB->pagetable[i] == 0)continue;
     printf("Parent ID = %d: Page # %d has PTE = %d\n", parentPID, i, currentPCB->pagetable[i]);
   }
 
@@ -1085,6 +1086,7 @@ int ProcessRealFork(PCB* parent){
   printf("Child ID = %d: sysStackPtr: 0x%08x\n", childPID, child->sysStackPtr);
   printf("Child ID = %d: CurrentSavedFrame: 0x%08x\n", childPID, child->currentSavedFrame);
   for (i = 0 ; i < MEM_L1TABLE_SIZE; i++){
+    if (child->pagetable[i] == 0)continue;
     printf("Child ID = %d: Page # %d has PTE = %d\n", childPID, i, child->pagetable[i]);
   }
 }

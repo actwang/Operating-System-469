@@ -29,7 +29,7 @@ void main (int argc, char *argv[])
 
   mem_adr = (MEM_MAX_VIRTUAL_ADDRESS + 7);
   Printf("Try to access memory location: %d\n", mem_adr);
-  Printf("Accessed memory: %d\n", * mem_adr);
+  Printf("Accessed memory: %d\n", *((int*)mem_adr));
 
   Printf("q2_2 (%d): Done!\n", getpid());
 }

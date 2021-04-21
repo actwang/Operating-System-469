@@ -523,6 +523,7 @@ dointerrupt (unsigned int cause, unsigned int iar, unsigned int isr,
     case TRAP_ADDRESS:
       printf ("Exiting after illegal address at iar=0x%x, isr=0x%x\n",
 	      iar, isr);
+        printf("Trap _Address\n");
       ProcessKill ();
       break;
     case TRAP_ILLEGALINST:
