@@ -303,7 +303,7 @@ int MemoryROPAccessHandler(PCB* pcb){
   uint32 new_page;
   pid = GetPidFromAddress(pcb); 
 
-  // if this page is only ref'ed by one process
+  // if this page is only ref'ed by one process, Make it R/W
   if (ref_counter[phys_pagenum] == 1){
     pcb->pagetable[page_num] &= ~MEM_PTE_READONLY;
   }

@@ -499,7 +499,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
 	      dataL);
 
     while ((n = ProcessGetFromFile (fd, buf, &addr, sizeof (buf))) > 0) {
-      dbprintf ('p', "Placing %d bytes at vaddr %08x.\n", n, addr - n);
+      //dbprintf ('p', "Placing %d bytes at vaddr %08x.\n", n, addr - n);
       // Copy the data to user memory.  Note that the user memory needs to
       // have enough space so that this copy will succeed!
       MemoryCopySystemToUser (pcb, buf, (char *)(addr - n), n);
@@ -995,7 +995,7 @@ void ProcessKill() {
 
 
 // Real Fork
-int ProcessRealFork(PCB* parent){
+void ProcessRealFork(PCB* parent){
   int intrs;
   PCB* child;
   int i;
@@ -1041,7 +1041,7 @@ int ProcessRealFork(PCB* parent){
 
   // Fix Child's fields to the new stack area, otherwise it will still point to parent's
   child->sysStackPtr = (uint32*)(child->sysStackArea + ((uint32)currentPCB->sysStackPtr & MEM_ADDRESS_OFFSET_MASK));
-  child->currentSavedFrame = (uint32*) (child->sysStackArea + (uint32)currentPCB->currentSavedFrame & MEM_ADDRESS_OFFSET_MASK);
+  child->currentSavedFrame = (uint32*) (child->sysStackArea + ((uint32)currentPCB->currentSavedFrame & MEM_ADDRESS_OFFSET_MASK));
   child->currentSavedFrame[PROCESS_STACK_PTBASE] = (uint32) child->pagetable;
 
   // if there was a previous saved frame, also fix child's current saved frame at PROCESS_STACK_PREV_FRAME 

@@ -42,6 +42,5 @@ void main (int argc, char *argv[])
   // Now print a message to show that everything worked
   Printf("q2_3 (%d): Accessed memory inside virtual address space, but outside of currently allocated pages:\n", getpid());
   Printf("Accessed memory: %d\n", *(int*)mem_addr);
-  Printf("NNNNNNNNNN\n");
   Printf("q2_3 (%d): Done!\n", getpid());
 }

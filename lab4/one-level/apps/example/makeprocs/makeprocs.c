@@ -76,12 +76,10 @@ void main (int argc, char *argv[])
       Printf("Running Test # 6\n");
       s_procs = sem_create(1-30);
       ditoa(s_procs, s_procs_str);
-      Printf("REACHED\n");
       for (j = 0; j < 30; j++){
         process_create(Q2_6, s_procs_str, NULL);
       }
       sem_wait(s_procs);
-      Printf("REACHED\n");
     }
     else {
       Printf("Invalid test number\n");
