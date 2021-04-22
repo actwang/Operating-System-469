@@ -310,7 +310,7 @@ int MemoryROPAccessHandler(PCB* pcb){
 
   // if this page is only ref'ed by one process, Make it R/W
   if (ref_counter[phys_pagenum] == 1){
-    pcb->pagetable[page_num] &= ~MEM_PTE_READONLY;
+    pcb->pagetable[page_num] &= invert(MEM_PTE_READONLY);
   }
   else{
     // Allocate new page
@@ -321,7 +321,7 @@ int MemoryROPAccessHandler(PCB* pcb){
     pcb->pagetable[page_num] = MemorySetupPte(new_page);
     ref_counter[phys_pagenum] --;
   }
-
+  // Q4
   printf("Process(%d): sysStackPtr: %x\n", pid, pcb->sysStackPtr);
   printf("Process(%d): sysStackArea: %x\n", pid, pcb->sysStackArea);
   printf("Process(%d): CurrentSavedFrame: %x\n", pid, pcb->currentSavedFrame);
