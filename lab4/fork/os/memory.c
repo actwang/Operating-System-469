@@ -16,7 +16,7 @@ static uint32 pagestart;
 static int nfreepages;
 //static int freemapmax;
 // Q3
-static int ref_counter[MEM_MAX_PAGES];
+static int ref_counter[MEM_MAX_PAGES] = {0};
 
 //----------------------------------------------------------------------
 //
