@@ -302,7 +302,6 @@ int MemoryROPAccessHandler(PCB* pcb){
   uint32 phys_pagenum = (pcb->pagetable[page_num] & MEM_PTE2PAGE_MASK) / MEM_PAGESIZE;// page number of the PTE
   uint32 new_page;
   pid = GetPidFromAddress(pcb);
-
   if (ref_counter[phys_pagenum] < 1) {
     ProcessKill();
     return MEM_FAIL;

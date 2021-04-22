@@ -538,7 +538,7 @@ dointerrupt (unsigned int cause, unsigned int iar, unsigned int isr,
       break;
     case TRAP_ROP_ACCESS:
       printf("ROP Accessing\n");
-      MemoryROPAccessHandler();
+      MemoryROPAccessHandler(currentPCB);
       break;
     default:
       printf ("Got an unrecognized system interrupt (0x%x) - exiting!\n",

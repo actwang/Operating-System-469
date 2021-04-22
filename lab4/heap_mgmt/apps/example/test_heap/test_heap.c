@@ -5,14 +5,14 @@
 void main (int argc, char argv[])
 {
   int i,j;                               // Loop index variable
-  int test1, test2, test3;
+  int* test1, *test2, *test3;
   int r1, r2, r3;
 
   Printf("test heap (%d): Creating heap tests\n", getpid());
 
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("Malloc with memsize=80\n");
-  test1 = (int)malloc(80);
+  test1 = malloc(80);
   if (test1 == NULL) {
     Printf("Fail to malloc for test1 in test_heap\n");
   }
@@ -24,7 +24,7 @@ void main (int argc, char argv[])
 
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("Malloc with memsize=256\n");
-  test2 = (int)malloc(256);
+  test2 = malloc(256);
   if (test2 == NULL) {
     Printf("Fail to malloc for test2 in test_heap\n");
   }
@@ -35,7 +35,7 @@ void main (int argc, char argv[])
 
   Printf("-------------------------------------------------------------------------------------\n");
   Printf("Malloc with memsize=\n");
-  test3 = (int)malloc(2048);
+  test3 = malloc(2048);
   if (test3 == NULL) {
     Printf("Fail to malloc for test3 in test_heap\n");
   }

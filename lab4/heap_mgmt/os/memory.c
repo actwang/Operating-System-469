@@ -289,7 +289,7 @@ void* malloc(PCB* pcb, int memsize) {
   if ((memsize <= 0) || (memsize > MEM_PAGESIZE)) {
     return NULL;
   }
-
+  dbprintf('m',"Loading MallocNodeHelper\n");
   node_address = MallocNodeHelper(&(pcb->heap_array[0]), pcb, memsize);
 
   if (node_address >= 0) {
@@ -343,9 +343,9 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
       node->rightChild = right_child;
     }
   }
-
   tmp_addr = MallocNodeHelper(node->leftChild, pcb, memsize);
   if (tmp_addr >= 0) {
+    printf("found\n");
     return tmp_addr;
   } else {
     return MallocNodeHelper(node->rightChild, pcb, memsize);
