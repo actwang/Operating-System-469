@@ -428,7 +428,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   // equal to the last 4-byte-aligned address in physical page
   // for the system stack.
   //---------------------------------------------------------
-
+  // One extra page for the heap thus 5 pages
   pcb->npages = 5;
   for (i = 0; i < 5; i++) {
     alloc_pages = MemoryAllocPage();
