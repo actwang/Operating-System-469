@@ -346,7 +346,6 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
   }
   tmp_addr = MallocNodeHelper(node->leftChild, pcb, memsize);
   if (tmp_addr >= 0) {
-    printf("found\n");
     return tmp_addr;
   } else {
     return MallocNodeHelper(node->rightChild, pcb, memsize);
