@@ -44,5 +44,5 @@ void main (int argc, char argv[])
   Printf("test3 freed (%d bytes freed)\n", r3);
   Printf("-------------------------------------------------------------------------------------\n");
 
-  Printf("test_heap (%d): All heap tests completed, exiting...\n", getpid());
+  Printf("DONE! test_heap (%d): All heap tests completed, exiting...\n", getpid());
 }
