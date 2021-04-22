@@ -290,6 +290,7 @@ void* malloc(PCB* pcb, int memsize) {
     return NULL;
   }
   dbprintf('m',"Loading MallocNodeHelper\n");
+  printf("PCB size = %d", pcb->heap_array[0].heapSize);
   node_address = MallocNodeHelper(&(pcb->heap_array[0]), pcb, memsize);
 
   if (node_address >= 0) {
@@ -310,7 +311,7 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
 
   if (!node) return -1;
   if ((node->leftChild == NULL) && (node->heapUsage == 0)) {
-    if ((memsize <= node->heapSize) && (memsize > (node->heapSize / 2))) {
+    if ((memsize <= node->heapSize) && (memsize > (node->heapSize / 2))) {			// If we found the proper buddy block
       node->heapUsage = 1;
       printf("Allocated the block: order = %d, addr = %d, requested mem size = %d, block size = %d\n", node->nodeOrder, node->nodeAddress, memsize, node->heapSize);
       return node->nodeAddress;
@@ -321,7 +322,7 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
     } else if (node->nodeOrder == 0) {
       return -1;
     } else {
-      left_child = &(pcb->heap_array[2 * node->nodeIndex]);
+      left_child = &(pcb->heap_array[2 * node->nodeIndex + 1]);
       left_child->parent = node;
       left_child->heapSize = node->heapSize / 2;
       left_child->nodeOrder = node->nodeOrder - 1;
@@ -330,7 +331,7 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
                                                 left_child->nodeOrder, left_child->nodeAddress, left_child->heapSize,
                                                 node->nodeOrder, node->nodeAddress, node->heapSize);
 
-      right_child = &(pcb->heap_array[2*node->nodeIndex + 1]);
+      right_child = &(pcb->heap_array[2*node->nodeIndex + 2]);
       right_child->parent = node;
       right_child->heapSize = node->heapSize / 2;
       right_child->nodeOrder = node->nodeOrder - 1;
@@ -351,7 +352,6 @@ int MallocNodeHelper(heapNode* node, PCB* pcb, int memsize) {
     return MallocNodeHelper(node->rightChild, pcb, memsize);
   }
 }
-
 
 
 int mfree(PCB* pcb, void* ptr){
