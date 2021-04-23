@@ -1,0 +1,2 @@
+work/test_heap.o: test_heap.c ../../../include/usertraps.h \
+ ../../../include/misc.h
